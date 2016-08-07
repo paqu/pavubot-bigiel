@@ -1,0 +1,13 @@
+{
+  "name": "beaglebone",
+  "version": "1.0.0",
+  "description": "beaglebone client",
+  "main": "socket_io_client.js",
+  "dependencies": {
+    "chokidar": "^1.5.1",
+    "command-line-args": "^3.0.0",
+    "opencv": "git+https://github.com/peterbraden/node-opencv.git",
+    "simple-logger": "git+https://github.com/paqu/simple-logger.git",
+    "socket.io-client": "^1.4.6"
+  }
+}
