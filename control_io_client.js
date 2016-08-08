@@ -65,8 +65,9 @@ var count = 0;
 
 var paths = new Array();
 
-paths["motor_a_mode"]  = PATH + "dev/ddal/motor/motor_a_mode";
-paths["motor_b_mode"]  = PATH + "dev/ddal/motor/motor_b_mode";
+paths["right_motor"]  = PATH + "dev/ddal/motor/motor_a_mode";
+paths["left_motor"]   = PATH + "dev/ddal/motor/motor_b_mode";
+
 paths["motor_a_speed"] = PATH + "dev/ddal/motor/motor_a_speed";
 paths["motor_b_speed"] = PATH + "dev/ddal/motor/motor_b_speed";
 paths["encoder_distance_a"]    = PATH + "dev/ddal/encoder/distance_a";
@@ -83,13 +84,13 @@ paths["distance_sensor_infrared"] = PATH + "dev/ddal/distance_sensor/infrared";
 conn.on('connect', function (data) {
     logger("Connected to server");
 
-    fs.readFile(paths["motor_a_mode"],"utf8", (err, data) => {
+    fs.readFile(paths["right_motor"],"utf8", (err, data) => {
         if (err) throw err;
         init_data.motor.motor_a_mode = removeWhiteSigns(data);
         checkIfComplete(init_data);
     });
 
-    fs.readFile(paths["motor_b_mode"],"utf8", (err, data) => {
+    fs.readFile(paths["left_motor"],"utf8", (err, data) => {
         if (err) throw err;
         init_data.motor.motor_b_mode = removeWhiteSigns(data);
         checkIfComplete(init_data);
@@ -315,4 +316,80 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
             conn.emit('server:update_distance_sensor_infrared',{distance_sensor_infrared:removeWhiteSigns(data)});
         });
     },100);
+});
+
+var Robot = function (paths) {
+    this.paths = paths;
+};
+
+
+Robot.prototype.goStraight = function () {
+    move(true, true);
+}
+
+Robot.prototype.goBack = function () {
+    move(false, false);
+}
+
+Robot.prototype.turnLeft = function () {
+    move(false, true);
+}
+
+Robot.prototype.turnRight = function () {
+    move(true, false);
+}
+
+Robot.prototype.stop = function () {
+    setRightMotor("stop");
+    setLeftMotor("stop");
+}
+
+function move(rightFwd, leftFwd) {
+    if (rightFwd) {
+        setRightMotor("cw");
+    } else {
+        setRightMotor("ccw");
+    }
+
+    if (leftFwd) {
+        setLeftMotor("ccw");
+    } else {
+        setRightMotor("cw");
+    }
+}
+
+function setLeftMotor(val) {
+    writeToFile(paths['left_motor'], val);   
+}
+
+function setRightMotor(val) {
+    writeToFile(paths['right_motor'], val);   
+}
+
+
+var robot = new Robot(paths);
+
+conn.on('robot:go_straight', function () {
+    logger("[on] robot:go_straight");
+    robot.goStraight();
+});
+
+conn.on('robot:go_back', function () {
+    logger("[on] robot:go_back");
+    robot.goBack();
+});
+
+conn.on('robot:turn_left', function () {
+    logger("[on] robot:turn_left");
+    robot.turn_left();
+});
+
+conn.on('robot:turn_right', function () {
+    logger("[on] robot:turn_right");
+    robot.turn_right();
+});
+
+conn.on('robot:stop', function () {
+    logger("[on] robot:stop");
+    robot.stop();
 });
