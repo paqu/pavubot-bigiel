@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "beaglebone client",
   "main": "socket_io_client.js",
+  "bin": {
+    "pavubot-contol": "./control_io_client.js",
+    "pavubot-video":  "./video_io_client.js"
+  },
   "dependencies": {
     "chokidar": "^1.5.1",
     "command-line-args": "^3.0.0",
