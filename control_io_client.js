@@ -1,24 +1,14 @@
 var io = require('socket.io-client');
-var chokidar = require('chokidar');
 var fs = require('fs')
+var chokidar = require('chokidar');
+var logger   = require('simple-logger');
 var commandLineArgs = require('command-line-args');
-var logger = require('simple-logger');
 
 var options = commandLineArgs([
-        { name : 'filenames',alias:'f',multiple:true, type: String },
         { name : 'host',alias:'h', type: String },
         { name : 'port',alias:'p', type: Number },
         { name : 'path',alias:'P', type: String },
 ]);
-
-/*
-var watcher = chokidar.watch(options.filenames, {
-    ignored:['/[\/\\]\./','dev/ddal/socket/socketid'],
-    persistent: true
-});
-*/
-
-
 
 var PORT = options.port;
 var HOST = options.host;
@@ -211,18 +201,6 @@ function checkIfComplete(data) {
 function removeWhiteSigns(data) {
     return data.replace(/^\s+|\s+$/g, "");
 }
-
-/*
-watcher.on('change',(path,event) => {
-    fs.readFile(path,"utf8", (err, data) => {
-        if (err) throw err;
-        data = removeWhiteSigns(data);
-        conn.emit('sendToServer',{path:path,msg:data});
-        logger("Sent to server " + data + " from " + path);
-    });
-
-});
-*/
 
 
 var listener = {
