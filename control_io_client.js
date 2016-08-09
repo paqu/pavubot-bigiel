@@ -354,7 +354,7 @@ function move(rightFwd, leftFwd) {
     if (leftFwd) {
         setLeftMotor("ccw");
     } else {
-        setRightMotor("cw");
+        setLefttMotor("cw");
     }
 }
 
@@ -381,12 +381,12 @@ conn.on('robot:go_back', function () {
 
 conn.on('robot:turn_left', function () {
     logger("[on] robot:turn_left");
-    robot.turn_left();
+    robot.turnLeft();
 });
 
 conn.on('robot:turn_right', function () {
     logger("[on] robot:turn_right");
-    robot.turn_right();
+    robot.turnRight();
 });
 
 conn.on('robot:stop', function () {
