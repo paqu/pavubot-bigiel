@@ -25,117 +25,340 @@ if (!PATH)
 
 var url = 'http://'+ HOST + ':' + PORT+'/control';
 
-var conn = io(url);
+const STOP = "stop";
+const CW   = "cw";
+const CCW  = "ccw";
 
-var init_data = {
-    motor:{
-        motor_a_mode:String,
-        motor_b_mode:String,
-        motor_a_speed:Number,
-        motor_b_speed:Number,
-    },
-    encoder:{
-        distance_a:Number,
-        distance_b:Number,
-        reset:Number
-    },
-    servo:{
-        angle:Number
-    },
-    distance_sensor:{
-        sonar:String,
-        infrared:String
-    },
-    video_socketId:String,
-    watchers:Number
-}
+const CAMERA_CENTER   = 90;
 
-var SEND = 10;
-var count = 0;
+const MOTOR_MIN_SPEED = 0;
+const MOTOR_MAX_SPEED = 100;
+
+const MOTOR_SUSPEND_ACTIVE = 0;
+
+const CAMERA_ANGLE             = "camera_angle";
+const VIDEO_SOCKET_ID          = "video_socket_id";
+const LEFT_MOTOR_MODE          = "left_motor_mode";
+const RIGHT_MOTOR_MODE         = "right_motor_mode";
+const LEFT_MOTOR_SPEED         = "left_motor_speed";
+const RIGHT_MOTOR_SPEED        = "right_motor_speed";
+const DISTANCE_SENSOR_SONAR    = "distance_sensor_sonar";
+const DISTANCE_SENSOR_INFRARED = "distance_sensor_infrared";
+const LEFT_ENCODER_DISTANCE    = "left_encoder_distance";
+const RIGHT_ENCODER_DISTANCE   = "right_encoder_distance";
 
 var paths = new Array();
 
-paths["right_motor"]  = PATH + "dev/ddal/motor/motor_a_mode";
-paths["left_motor"]   = PATH + "dev/ddal/motor/motor_b_mode";
-
-paths["motor_a_speed"] = PATH + "dev/ddal/motor/motor_a_speed";
-paths["motor_b_speed"] = PATH + "dev/ddal/motor/motor_b_speed";
-paths["encoder_distance_a"]    = PATH + "dev/ddal/encoder/distance_a";
-paths["encoder_distance_b"]    = PATH + "dev/ddal/encoder/distance_b";
-paths["reset"]    = PATH + "dev/ddal/encoder/reset";
-paths["angle"]    = PATH + "dev/ddal/servo/angle";
-paths['video_socketId'] = PATH + "dev/ddal/socket/video_socketId";
-paths["distance_sensor_sonar"]    = PATH + "dev/ddal/distance_sensor/sonar";
-paths["distance_sensor_infrared"] = PATH + "dev/ddal/distance_sensor/infrared";
+paths[CAMERA_ANGLE]             = PATH + "dev/ddal/servo/camera_angle";
+paths[VIDEO_SOCKET_ID]          = PATH + "dev/ddal/socket/video_socketId";
+paths[LEFT_MOTOR_MODE]          = PATH + "dev/ddal/motor/left_motor_mode";
+paths[RIGHT_MOTOR_MODE]         = PATH + "dev/ddal/motor/right_motor_mode";
+paths[LEFT_MOTOR_SPEED]         = PATH + "dev/ddal/motor/left_motor_speed";
+paths[RIGHT_MOTOR_SPEED]        = PATH + "dev/ddal/motor/right_motor_speed";
+paths[DISTANCE_SENSOR_SONAR]    = PATH + "dev/ddal/distance_sensor/sonar";
+paths[DISTANCE_SENSOR_INFRARED] = PATH + "dev/ddal/distance_sensor/infrared";
+paths[LEFT_ENCODER_DISTANCE]    = PATH + "dev/ddal/encoder/left_encoder_distance";
+paths[RIGHT_ENCODER_DISTANCE]   = PATH + "dev/ddal/encoder/right_encoder_distance";
 
 
+var init_data = {} 
+var init_data_to_send = [LEFT_MOTOR_SPEED, RIGHT_MOTOR_SPEED, LEFT_ENCODER_DISTANCE,
+    RIGHT_ENCODER_DISTANCE, CAMERA_ANGLE, DISTANCE_SENSOR_SONAR, DISTANCE_SENSOR_INFRARED,
+    VIDEO_SOCKET_ID];
 
+var SEND = init_data_to_send.length;
+
+
+function writeToFile(path, value) {
+    fs.writeFile(path, value, (err) => {
+          if (err) throw err;
+          logger('Write  (' + value +') to ' + path);
+    });
+}
+
+function checkIfComplete(data) {
+        count++;
+        if (SEND == count) {
+            logger("[emit]:server:control:init_data" + JSON.stringify(data));
+            conn.emit("server:control:init_data",data);
+            count = 0;
+        }
+}
+
+function removeWhiteSigns(data) {
+    return data.replace(/^\s+|\s+$/g, "");
+}
+
+var listener = {
+    video_socketId:{},
+    right_encoder_distance:{},
+    left_encoder_distance:{},
+    distance_sensor_sonar:{},
+    distance_sensor_infrared:{}
+};
+
+listener.video_socketId = chokidar.watch(paths[VIDEO_SOCKET_ID], {
+    persistent: true
+});
+
+listener.right_encoder_distance = chokidar.watch(paths[RIGHT_ENCODER_DISTANCE], {
+    persistent: true
+});
+
+listener.left_encoder_distance = chokidar.watch(paths[LEFT_ENCODER_DISTANCE], {
+    persistent: true
+});
+
+listener.distance_sensor_sonar = chokidar.watch(paths[DISTANCE_SENSOR_SONAR], {
+    persistent: true
+});
+
+listener.distance_sensor_infrared = chokidar.watch(paths[DISTANCE_SENSOR_INFRARED], {
+    persistent: true
+});
+
+listener.video_socketId.on('change',(path,event) => {
+    logger("Change event on " + path);
+
+    setTimeout(function (path) {
+        fs.readFile(paths[VIDEO_SOCKET_ID],'utf8', (err, data) => {
+            if (err) throw err;
+
+            logger("[emit] server:control:update_video_socket_id:" + data);
+            conn.emit("server:control:update_video_socket_id",{video_socket_id:removeWhiteSigns(data)});
+        });
+    },100);
+});
+
+listener.left_encoder_distance.on('change',(path,event) => {
+    logger("Change event on " + path);
+
+    setTimeout(function (path) {
+        fs.readFile(paths[LEFT_ENCODER_DISTANCE],'utf8', (err, data) => {
+            if (err) throw err;
+
+            logger("[emit] server:control:update_left_encoder_distance:" + data);
+            conn.emit("server:control:update_left_encoder_distance",{left_encoder_distance:removeWhiteSigns(data)});
+        });
+    },100);
+});
+
+listener.right_encoder_distance.on('change',(path,event) => {
+    logger("Change event on " + path);
+
+    setTimeout(function (path) {
+        fs.readFile(paths[RIGHT_ENCODER_DISTANCE],'utf8', (err, data) => {
+            if (err) throw err;
+
+            logger("[emit] server:control:update_right_encoder_distance:" + data);
+            conn.emit("server:control:update_right_encoder_distance",{right_encoder_distance:removeWhiteSigns(data)});
+        });
+    },100);
+});
+
+listener.distance_sensor_sonar.on('change',(path,event) => {
+    logger("Change event on " + path);
+
+    setTimeout(function (path) {
+        fs.readFile(paths[DISTANCE_SENSOR_SONAR],'utf8', (err, data) => {
+            if (err) throw err;
+
+            logger("[emit] server:control:update_distance_sensor_sonar:" + data);
+            conn.emit("server:control:update_distance_sensor_sonar",{distance_sensor_sonar:removeWhiteSigns(data)});
+        });
+    },100);
+});
+
+listener.distance_sensor_infrared.on('change',(path,event) => {
+    logger("Change event on " + path);
+
+    setTimeout(function (path) {
+        fs.readFile(paths[DISTANCE_SENSOR_INFRARED],'utf8', (err, data) => {
+            if (err) throw err;
+
+            logger("[emit] server:control:update_distance_sensor_infrared:" + data);
+            conn.emit("server:control:update_distance_sensor_infrared",{distance_sensor_infrared:removeWhiteSigns(data)});
+        });
+    },100);
+});
+
+var Robot = function (paths) {
+    this.paths = paths;
+};
+
+
+Robot.prototype.goStraight = function () {
+    move(true, true);
+}
+
+Robot.prototype.goBack = function () {
+    move(false, false);
+}
+
+Robot.prototype.turnLeft = function () {
+    move(false, true);
+}
+
+Robot.prototype.turnRight = function () {
+    move(true, false);
+}
+
+Robot.prototype.stop = function () {
+    setRightMotorMode(STOP);
+    setLeftMotorMode(STOP);
+}
+
+Robot.prototype.turnOn = function () {
+    setRightMotorSpeed(MOTOR_MAX_SPEED);
+    setLeftMotorSpeed(MOTOR_MAX_SPEED):
+    setMotorSuspend(!MOTOR_SUSPEND_ACTIVE);
+    setCameraAngle(CAMERA_CENTER);
+}
+
+Robot.prototype.turnOff = function () {
+    setRightMotorSpeed(MOTOR_MIN_SPEED);
+    setLeftMotorSpeed(MOTOR_MIN_SPEED);
+    setLeftMotorMode(STOP);
+    setRightMotorMode(STOP);
+    setMotorSuspend(!MOTOR_SUSPEND_ACTIVE);
+}
+
+Robot.prototype.cameraAngleTo = function (val) {
+    setCameraAngle(val);
+}
+
+Robot.updateSpeedBoth = function (left, right) {
+    setLeftMorotSpeed(left);
+    setRightMotorSpeed(right);
+}
+
+function setLeftMotorMode(val) {
+    writeToFile(paths[LEFT_MODTOR_MODE], val);   
+}
+
+function setRightMotorMode(val) {
+    writeToFile(paths[RIGHT_MOTOR_MODE], val);   
+}
+
+function setLeftMorotSpeed(val) {
+    writeToFile(paths[LEFT_MOTOR_SPEED], val);   
+}
+
+function setRightMotorSpeed(val) {
+    writeToFile(paths[RIGHT_MOTOR_SPEED], val);   
+}
+
+function setCameraAngle(val) {
+    writeToFile(paths[CAMERA_ANGLE], val);   
+}
+
+function move(leftFwd, rightFwd) {
+    if (rightFwd) {
+        setRightMotorMode(CW);
+    } else {
+        setRightMotorMode(CCW);
+    }
+
+    if (leftFwd) {
+        setLeftMotorMode(CCW);
+    } else {
+        setLefttMotorMode(CW);
+    }
+}
+
+var robot = new Robot(paths);
+
+var conn = io(url);
 
 conn.on('connect', function (data) {
-    logger("Connected to server");
 
-    fs.readFile(paths["right_motor"],"utf8", (err, data) => {
+    fs.readFile(paths[LEFT_MOTOR_SPEED],"utf8", (err, data) => {
         if (err) throw err;
-        init_data.motor.motor_a_mode = removeWhiteSigns(data);
+        init_data[LEFT_MOTOR_SPEED] = removeWhiteSigns(data);
         checkIfComplete(init_data);
     });
 
-    fs.readFile(paths["left_motor"],"utf8", (err, data) => {
+    fs.readFile(paths[RIGHT_MOTOR_SPEED],"utf8", (err, data) => {
         if (err) throw err;
-        init_data.motor.motor_b_mode = removeWhiteSigns(data);
+        init_data[RIGHT_MOTOR_SPEED] = removeWhiteSigns(data);
         checkIfComplete(init_data);
     });
 
-    fs.readFile(paths["motor_a_speed"],"utf8", (err, data) => {
+    fs.readFile(paths[LEFT_ENCODER_DISTANCE],"utf8", (err, data) => {
         if (err) throw err;
-        init_data.motor.motor_a_speed = removeWhiteSigns(data);
+        init_data[LEFT_ENCODER_DISTANCE] = removeWhiteSigns(data);
         checkIfComplete(init_data);
     });
 
-    fs.readFile(paths["motor_b_speed"],"utf8", (err, data) => {
+    fs.readFile(paths[RIGHT_ENCODER_DISTANCE],"utf8", (err, data) => {
         if (err) throw err;
-        init_data.motor.motor_b_speed = removeWhiteSigns(data);
+        init_data[ = removeWhiteSigns(data);
         checkIfComplete(init_data);
     });
 
-    fs.readFile(paths["encoder_distance_a"],"utf8", (err, data) => {
+    fs.readFile(paths[CAMERA_ANGLE],"utf8", (err, data) => {
         if (err) throw err;
-        init_data.encoder.distance_a = removeWhiteSigns(data);
+        init_data[CAMERA_ANGLE] = removeWhiteSigns(data);
         checkIfComplete(init_data);
     });
 
-    fs.readFile(paths["encoder_distance_b"],"utf8", (err, data) => {
+    fs.readFile(paths[DISTANCE_SENSOR_SONAR],"utf8", (err, data) => {
         if (err) throw err;
-        init_data.encoder.distance_b = removeWhiteSigns(data);
+        init_data[DISTANCE_SENSOR_SONAR] = removeWhiteSigns(data);
         checkIfComplete(init_data);
     });
 
-    fs.readFile(paths["reset"],"utf8", (err, data) => {
+    fs.readFile(paths[DISTANCE_SENSOR_INFRARED],"utf8", (err, data) => {
         if (err) throw err;
-        init_data.encoder.reset = removeWhiteSigns(data);
+        init_data[DISTANCE_SENSOR_INFRARED] = removeWhiteSigns(data);
         checkIfComplete(init_data);
     });
-
-    fs.readFile(paths["angle"],"utf8", (err, data) => {
+    
+    fs.readFile(paths[VIDEO_SOCKET_ID],"utf8", (err, data) => {
         if (err) throw err;
-        init_data.servo.angle = removeWhiteSigns(data);
-        checkIfComplete(init_data);
-    });
-
-    fs.readFile(paths["distance_sensor_sonar"],"utf8", (err, data) => {
-        if (err) throw err;
-        init_data.distance_sensor.sonar = removeWhiteSigns(data);
-        checkIfComplete(init_data);
-    });
-
-    fs.readFile(paths["distance_sensor_infrared"],"utf8", (err, data) => {
-        if (err) throw err;
-        init_data.distance_sensor.infrared = removeWhiteSigns(data);
+        init_data[VIDEO_SOCKET_ID] = "no connection";
         checkIfComplete(init_data);
     });
 });
+conn.on("robot::go_straight", function () {
+    logger("[on] robot::go_straight");
+    robot.goStraight();
+});
 
+conn.on("robot::go_back", function () {
+    logger("[on] robot::go_back");
+    robot.goBack();
+});
 
+conn.on("robot::turn_left", function () {
+    logger("[on] robot::turn_left");
+    robot.turnLeft();
+});
+
+conn.on("robot::turn_right", function () {
+    logger("[on] robot::turn_right");
+    robot.turnRight();
+});
+
+conn.on("robot::stop", function () {
+    logger("[on] robot::stop");
+    robot.stop();
+});
+
+conn.on("robot:change_camera_angle_to", function(data) {
+    var value = data.camera_angle;
+    logger("[on] robot::change_camera_angle_to:" + value);
+    robot.cameraAngleTo(value);
+});
+
+conn.on("robot::update_speed_both", function(data) {
+    var left = data.left_motor_speed;
+    var right = data.right_motor_speed;
+    logger("[on] robot::update_speed_both, left:" + left + ", right:" + right);
+    robot.updateSpeedBoth(left,right);
+});
+
+/* Error handling */
 conn.on('connect_error', function (err) {
     logger("Connect error: " + err);
 });
@@ -167,207 +390,7 @@ conn.on('reconnect_failed', function () {
 conn.on('error', function (err) {
     logger("Error: " + err);
 });
-
-conn.on("robot:update_speed", function(data) {
-    logger("[on] robot:update_speed");
-    writeToFile(paths["motor_a_speed"], data.motor_a_speed);
-    writeToFile(paths["motor_b_speed"], data.motor_b_speed);
-});
-
-var SERVO_UPDATE = "robot:update_servo_angle";
-conn.on(SERVO_UPDATE, function(data) {
-    logger("[on] " + SERVO_UPDATE);
-    writeToFile(paths["angle"], data.servo_angle);
-});
-
-function writeToFile(path, value) {
-    fs.writeFile(path, value, (err) => {
-          if (err) throw err;
-          logger('Write  (' + value +') to ' + path);
-    });
-}
-
-function checkIfComplete(data) {
-        count++;
-        if (SEND == count) {
-            data.video_socketId = 'no connection';
-            data.watchers = 0;
-            logger("Send init data:\n" + JSON.stringify(data));
-            conn.emit('server:init',data);
-            count = 0;
-        }
-}
-
-function removeWhiteSigns(data) {
-    return data.replace(/^\s+|\s+$/g, "");
-}
-
-
-var listener = {
-    video_socketId:{},
-    encoder_distance_a:{},
-    encoder_distance_b:{},
-    distance_sensor_sonar:{},
-    distance_sensor_infrared:{}
-};
-
-listener.video_socketId = chokidar.watch(paths['video_socketId'], {
-    persistent: true
-});
-
-listener.encoder_distance_a = chokidar.watch(paths['encoder_distance_a'], {
-    persistent: true
-});
-
-listener.encoder_distance_b = chokidar.watch(paths['encoder_distance_b'], {
-    persistent: true
-});
-
-listener.distance_sensor_sonar = chokidar.watch(paths['distance_sensor_sonar'], {
-    persistent: true
-});
-
-listener.distance_sensor_infrared = chokidar.watch(paths['distance_sensor_infrared'], {
-    persistent: true
-});
-
-listener.video_socketId.on('change',(path,event) => {
-    logger("Change event on " + path);
-
-    setTimeout(function (path) {
-        fs.readFile(paths['video_socketId'],'utf8', (err, data) => {
-            if (err) throw err;
-
-            logger("Control:[emit] server:update_video_socketId " + data);
-            conn.emit('server:update_video_socketId',{video_socketId:removeWhiteSigns(data)});
-        });
-    },100);
-});
-
-listener.encoder_distance_a.on('change',(path,event) => {
-    logger("Change event on " + path);
-
-    setTimeout(function (path) {
-        fs.readFile(paths['encoder_distance_a'],'utf8', (err, data) => {
-            if (err) throw err;
-
-            logger("Control:[emit] server:update_encoder_distance_a: " + data);
-            conn.emit('server:update_encoder_distance_a',{encoder_distance_a:removeWhiteSigns(data)});
-        });
-    },100);
-});
-
-listener.encoder_distance_b.on('change',(path,event) => {
-    logger("Change event on " + path);
-
-    setTimeout(function (path) {
-        fs.readFile(paths['encoder_distance_b'],'utf8', (err, data) => {
-            if (err) throw err;
-
-            logger("Control:[emit] server:update_encoder_distance_b: " + data);
-            conn.emit('server:update_encoder_distance_b',{encoder_distance_b:removeWhiteSigns(data)});
-        });
-    },100);
-});
-
-listener.distance_sensor_sonar.on('change',(path,event) => {
-    logger("Change event on " + path);
-
-    setTimeout(function (path) {
-        fs.readFile(paths['distance_sensor_sonar'],'utf8', (err, data) => {
-            if (err) throw err;
-
-            logger("Control:[emit] server:update_distance_sensor_sonar: " + data);
-            conn.emit('server:update_distance_sensor_sonar',{distance_sensor_sonar:removeWhiteSigns(data)});
-        });
-    },100);
-});
-
-listener.distance_sensor_infrared.on('change',(path,event) => {
-    logger("Change event on " + path);
-
-    setTimeout(function (path) {
-        fs.readFile(paths['distance_sensor_infrared'],'utf8', (err, data) => {
-            if (err) throw err;
-
-            logger("Control:[emit] server:update_distance_sensor_infrared: " + data);
-            conn.emit('server:update_distance_sensor_infrared',{distance_sensor_infrared:removeWhiteSigns(data)});
-        });
-    },100);
-});
-
-var Robot = function (paths) {
-    this.paths = paths;
-};
-
-
-Robot.prototype.goStraight = function () {
-    move(true, true);
-}
-
-Robot.prototype.goBack = function () {
-    move(false, false);
-}
-
-Robot.prototype.turnLeft = function () {
-    move(false, true);
-}
-
-Robot.prototype.turnRight = function () {
-    move(true, false);
-}
-
-Robot.prototype.stop = function () {
-    setRightMotor("stop");
-    setLeftMotor("stop");
-}
-
-function move(rightFwd, leftFwd) {
-    if (rightFwd) {
-        setRightMotor("cw");
-    } else {
-        setRightMotor("ccw");
-    }
-
-    if (leftFwd) {
-        setLeftMotor("ccw");
-    } else {
-        setLefttMotor("cw");
-    }
-}
-
-function setLeftMotor(val) {
-    writeToFile(paths['left_motor'], val);   
-}
-
-function setRightMotor(val) {
-    writeToFile(paths['right_motor'], val);   
-}
-
-
-var robot = new Robot(paths);
-
-conn.on('robot:go_straight', function () {
-    logger("[on] robot:go_straight");
-    robot.goStraight();
-});
-
-conn.on('robot:go_back', function () {
-    logger("[on] robot:go_back");
-    robot.goBack();
-});
-
-conn.on('robot:turn_left', function () {
-    logger("[on] robot:turn_left");
-    robot.turnLeft();
-});
-
-conn.on('robot:turn_right', function () {
-    logger("[on] robot:turn_right");
-    robot.turnRight();
-});
-
-conn.on('robot:stop', function () {
-    logger("[on] robot:stop");
-    robot.stop();
+conn.on('disconnect', function () {
+    logger("Server was disconnected");
+    robot.turnOff();
 });
