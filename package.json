@@ -1,6 +1,6 @@
 {
   "name": "beaglebone",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "beaglebone client",
   "main": "socket_io_client.js",
   "dependencies": {
