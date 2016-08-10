@@ -1,0 +1,45 @@
+ROBOT API
+[on]:
+	robot::update_speed_both
+		data.left_motor_speed
+		data.right_motor_speed
+
+	robot:change_camera_angle_to
+		data.camera_angle
+
+	robot::stop
+	robot::rurn_left
+	robot::turn_right
+	robot::go_back
+	robot::go_straight
+
+[emit]
+	server:control:update_distance_sensor_infrared
+		data.distance_sensor_infrared
+			
+	server:control:update_distance_sensor_infrared
+		data.distance_sensor_infrared
+
+	server:control:update_distance_sensor_sonar
+		data.distance_sensor_sonar
+
+	server:control:update_right_encoder_distance
+		data.right_encoder_distance
+
+	server:control:update_left_encoder_distance
+		data.left_encoder_distance
+
+	server:control:update_video_socket_id
+		data:video_socket_id
+
+	server:control:init_data
+		data.left_motor_speed
+		data.right_motor_speed
+		data.left_encoder_distance
+		data.right_encoder_distance
+		data.camera_angle
+		data.distance_sesnor_sonar
+		data.distance_sensor_infrared
+		
+
+
