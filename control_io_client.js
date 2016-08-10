@@ -42,10 +42,12 @@ const LEFT_MOTOR_MODE          = "left_motor_mode";
 const RIGHT_MOTOR_MODE         = "right_motor_mode";
 const LEFT_MOTOR_SPEED         = "left_motor_speed";
 const RIGHT_MOTOR_SPEED        = "right_motor_speed";
+const MOTOR_SUSPEND            = "motor_suspend";
 const DISTANCE_SENSOR_SONAR    = "distance_sensor_sonar";
 const DISTANCE_SENSOR_INFRARED = "distance_sensor_infrared";
 const LEFT_ENCODER_DISTANCE    = "left_encoder_distance";
 const RIGHT_ENCODER_DISTANCE   = "right_encoder_distance";
+const ROBOT_NAME               = "robot_name";
 
 var paths = new Array();
 
@@ -55,18 +57,21 @@ paths[LEFT_MOTOR_MODE]          = PATH + "dev/ddal/motor/left_motor_mode";
 paths[RIGHT_MOTOR_MODE]         = PATH + "dev/ddal/motor/right_motor_mode";
 paths[LEFT_MOTOR_SPEED]         = PATH + "dev/ddal/motor/left_motor_speed";
 paths[RIGHT_MOTOR_SPEED]        = PATH + "dev/ddal/motor/right_motor_speed";
+paths[MOTOR_SUSPEND]            = PATH + "dev/ddal/motor/suspend";
 paths[DISTANCE_SENSOR_SONAR]    = PATH + "dev/ddal/distance_sensor/sonar";
 paths[DISTANCE_SENSOR_INFRARED] = PATH + "dev/ddal/distance_sensor/infrared";
 paths[LEFT_ENCODER_DISTANCE]    = PATH + "dev/ddal/encoder/left_encoder_distance";
 paths[RIGHT_ENCODER_DISTANCE]   = PATH + "dev/ddal/encoder/right_encoder_distance";
+paths[ROBOT_NAME]               = PATH + "dev/ddal/robot_info/robot_name";
 
 
 var init_data = {} 
 var init_data_to_send = [LEFT_MOTOR_SPEED, RIGHT_MOTOR_SPEED, LEFT_ENCODER_DISTANCE,
     RIGHT_ENCODER_DISTANCE, CAMERA_ANGLE, DISTANCE_SENSOR_SONAR, DISTANCE_SENSOR_INFRARED,
-    VIDEO_SOCKET_ID];
+    VIDEO_SOCKET_ID, ROBOT_NAME];
 
 var SEND = init_data_to_send.length;
+var count = 0;
 
 
 function writeToFile(path, value) {
@@ -210,7 +215,7 @@ Robot.prototype.stop = function () {
 
 Robot.prototype.turnOn = function () {
     setRightMotorSpeed(MOTOR_MAX_SPEED);
-    setLeftMotorSpeed(MOTOR_MAX_SPEED):
+    setLeftMotorSpeed(MOTOR_MAX_SPEED);
     setMotorSuspend(!MOTOR_SUSPEND_ACTIVE);
     setCameraAngle(CAMERA_CENTER);
 }
@@ -232,20 +237,24 @@ Robot.updateSpeedBoth = function (left, right) {
     setRightMotorSpeed(right);
 }
 
+function setMotorSuspend(val) {
+    writeToFile(paths[MOTOR_SUSPEND], val);
+}
+
 function setLeftMotorMode(val) {
-    writeToFile(paths[LEFT_MODTOR_MODE], val);   
+    writeToFile(paths[LEFT_MOTOR_MODE], val);
 }
 
 function setRightMotorMode(val) {
-    writeToFile(paths[RIGHT_MOTOR_MODE], val);   
+    writeToFile(paths[RIGHT_MOTOR_MODE], val);
 }
 
-function setLeftMorotSpeed(val) {
-    writeToFile(paths[LEFT_MOTOR_SPEED], val);   
+function setLeftMotorSpeed(val) {
+    writeToFile(paths[LEFT_MOTOR_SPEED], val);
 }
 
 function setRightMotorSpeed(val) {
-    writeToFile(paths[RIGHT_MOTOR_SPEED], val);   
+    writeToFile(paths[RIGHT_MOTOR_SPEED], val);
 }
 
 function setCameraAngle(val) {
@@ -272,6 +281,8 @@ var conn = io(url);
 
 conn.on('connect', function (data) {
 
+    robot.turnOn();
+
     fs.readFile(paths[LEFT_MOTOR_SPEED],"utf8", (err, data) => {
         if (err) throw err;
         init_data[LEFT_MOTOR_SPEED] = removeWhiteSigns(data);
@@ -292,7 +303,7 @@ conn.on('connect', function (data) {
 
     fs.readFile(paths[RIGHT_ENCODER_DISTANCE],"utf8", (err, data) => {
         if (err) throw err;
-        init_data[ = removeWhiteSigns(data);
+        init_data[RIGHT_ENCODER_DISTANCE] = removeWhiteSigns(data);
         checkIfComplete(init_data);
     });
 
@@ -317,6 +328,12 @@ conn.on('connect', function (data) {
     fs.readFile(paths[VIDEO_SOCKET_ID],"utf8", (err, data) => {
         if (err) throw err;
         init_data[VIDEO_SOCKET_ID] = "no connection";
+        checkIfComplete(init_data);
+    });
+
+    fs.readFile(paths[ROBOT_NAME],"utf8", (err, data) => {
+        if (err) throw err;
+        init_data[ROBOT_NAME] = removeWhiteSigns(data);
         checkIfComplete(init_data);
     });
 });
