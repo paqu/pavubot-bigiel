@@ -32,6 +32,7 @@ const STOP = "stop";
 const CW   = "cw";
 const CCW  = "ccw";
 
+const CAMERA_OFFSET   = 90;
 const CAMERA_CENTER   = 90;
 
 const MOTOR_MIN_SPEED = 0;
@@ -125,11 +126,11 @@ listener.distance_sensor_infrared = chokidar.watch(paths[DISTANCE_SENSOR_INFRARE
     persistent: true
 });
 
-listener.video_socketId.on('change',(path,event) => {
+listener.video_socketId.on("change",(path,event) => {
     logger("Change event on " + path);
 
     setTimeout(function (path) {
-        fs.readFile(paths[VIDEO_SOCKET_ID],'utf8', (err, data) => {
+        fs.readFile(paths[VIDEO_SOCKET_ID],"utf8", (err, data) => {
             if (err) throw err;
 
             logger("[emit] server:control:update_video_socket_id:" + data);
@@ -267,6 +268,7 @@ function setRightMotorSpeed(val) {
 }
 
 function setCameraAngle(val) {
+    val = Number(val) + CAMERA_OFFSET;
     writeToFile(paths[CAMERA_ANGLE], val);   
 }
 
@@ -320,7 +322,8 @@ conn.on('connect', function (data) {
 
     fs.readFile(paths[CAMERA_ANGLE],"utf8", (err, data) => {
         if (err) throw err;
-        init_data[CAMERA_ANGLE] = removeWhiteSigns(data);
+        (Number(removeWhiteSigns(data)) - CAMERA_OFFSET)
+        init_data[CAMERA_ANGLE] = (Number(removeWhiteSigns(data)) - CAMERA_OFFSET);
         checkIfComplete(init_data);
     });
 
