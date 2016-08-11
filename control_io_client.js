@@ -242,8 +242,8 @@ Robot.prototype.cameraAngleTo = function (val) {
     setCameraAngle(val);
 }
 
-Robot.updateSpeedBoth = function (left, right) {
-    setLeftMorotSpeed(left);
+Robot.prototype.updateSpeedBoth = function (left, right) {
+    setLeftMotorSpeed(left);
     setRightMotorSpeed(right);
 }
 
