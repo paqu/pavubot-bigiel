@@ -4,7 +4,7 @@ ROBOT API
 		data.left_motor_speed
 		data.right_motor_speed
 
-	robot:change_camera_angle_to
+	robot::change_camera_angle_to
 		data.camera_angle
 
 	robot::stop
@@ -40,6 +40,9 @@ ROBOT API
 		data.camera_angle
 		data.distance_sesnor_sonar
 		data.distance_sensor_infrared
+		data.video_socket_id
+		data.robot_name
+		data.robot_mode [Number]
 		
 
 

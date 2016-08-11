@@ -25,6 +25,9 @@ if (!PATH)
 
 var url = 'http://'+ HOST + ':' + PORT+'/control';
 
+const ROBOT_AUTO_MODE   = 0;
+const ROBOT_MANUAL_MODE = 1;
+
 const STOP = "stop";
 const CW   = "cw";
 const CCW  = "ccw";
@@ -48,6 +51,7 @@ const DISTANCE_SENSOR_INFRARED = "distance_sensor_infrared";
 const LEFT_ENCODER_DISTANCE    = "left_encoder_distance";
 const RIGHT_ENCODER_DISTANCE   = "right_encoder_distance";
 const ROBOT_NAME               = "robot_name";
+const ROBOT_MODE               = "robot_mode";
 
 var paths = new Array();
 
@@ -63,7 +67,6 @@ paths[DISTANCE_SENSOR_INFRARED] = PATH + "dev/ddal/distance_sensor/infrared";
 paths[LEFT_ENCODER_DISTANCE]    = PATH + "dev/ddal/encoder/left_encoder_distance";
 paths[RIGHT_ENCODER_DISTANCE]   = PATH + "dev/ddal/encoder/right_encoder_distance";
 paths[ROBOT_NAME]               = PATH + "dev/ddal/robot_info/robot_name";
-
 
 var init_data = {} 
 var init_data_to_send = [LEFT_MOTOR_SPEED, RIGHT_MOTOR_SPEED, LEFT_ENCODER_DISTANCE,
@@ -187,10 +190,16 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
     },100);
 });
 
-var Robot = function (paths) {
-    this.paths = paths;
+var Robot = function (mode) {
+    this.mode = mode;
 };
 
+Robot.prototype.getMode = function () {
+    return this.mode;
+}
+Robot.prototype.setMode = function (val) {
+    this.mode = val;
+}
 
 Robot.prototype.goStraight = function () {
     move(true, true);
@@ -275,13 +284,15 @@ function move(leftFwd, rightFwd) {
     }
 }
 
-var robot = new Robot(paths);
+var robot = new Robot(ROBOT_AUTO_MODE);
 
 var conn = io(url);
 
 conn.on('connect', function (data) {
 
     robot.turnOn();
+
+    init_data[ROBOT_MODE] = robot.getMode();
 
     fs.readFile(paths[LEFT_MOTOR_SPEED],"utf8", (err, data) => {
         if (err) throw err;

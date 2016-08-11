@@ -7,12 +7,14 @@ var logger = require('simple-logger');
 var options = commandLineArgs([
         { name : 'host',alias:'h', type: String },
         { name : 'port',alias:'p', type: Number },
+        { name : 'path',alias:'P', type: String },
         { name : 'fps' ,alias:'f', type: Number },
 ]);
 
 var FPS  = options.fps;
 var PORT = options.port;
 var HOST = options.host;
+var PATH = options.path
 
 if (!FPS)
     FPS = 20;
@@ -23,6 +25,9 @@ if (!PORT)
 if (!HOST)
     HOST = 'localhost';
 
+if (!PATH)
+    PATH = '';
+
 var url = 'http://'+ HOST + ':' + PORT+'/video';
 
 var conn = io(url);
@@ -30,7 +35,15 @@ var interval;
 var camWidth = 320;
 var camHeight = 240;
 var camInterval = 1000 / FPS;
-var camera = new cv.VideoCapture(0);
+var camera;
+
+const VIDEO_SOCKET_ID = "video_socket_id";
+
+var paths = new Array();
+
+paths[VIDEO_SOCKET_ID] = PATH + "dev/ddal/socket/video_socketId";
+
+camera = new cv.VideoCapture(0);
 camera.setWidth(camWidth);
 camera.setHeight(camHeight);
 
@@ -74,24 +87,24 @@ conn.on('error', function (err) {
     logger("Error: " + err);
 });
 
-conn.on('video:video_socketId', function (data) {
-    logger('get socket id:'+ data.socketId + ' from server.');
-    writeToFile('dev/ddal/socket/video_socketId', data.socketId);
+conn.on('video::video_socket_id', function (data) {
+    logger('get socket id:'+ data.socket_id + ' from server.');
+    writeToFile(paths[VIDEO_SOCKET_ID], data.socket_id);
 });
 
 
-conn.on("video:stop_video", function () {
+conn.on("video::stop_video", function () {
     logger("[on] video:stop_video");
     clearInterval(interval);
 });
 
-conn.on("video:start_video",function () {
-    logger("[on] video:start_video");
+conn.on("video::start_video",function () {
+    logger("[on] video::start_video");
     interval = setInterval(function () {
         camera.read(function(err, im) {
             if (err) throw err;
-            logger("[emit]:server_video_nsp:frame");
-            conn.emit("server_video_nsp:frame",{ frame: im.toBuffer() });
+            logger("[emit]:server:video:frame");
+            conn.emit("server:video:frame",{ frame: im.toBuffer() });
         });
     },camInterval);
 });
@@ -100,7 +113,7 @@ conn.on("video:start_video",function () {
 function writeToFile(path, value) {
     fs.writeFile(path, value, (err) => {
           if (err) throw err;
-          logger('Saved socket id (' + value +') to ' + path);
+          logger('Write  (' + value +') to ' + path);
     });
 }
 
