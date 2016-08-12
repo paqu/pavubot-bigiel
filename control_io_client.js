@@ -282,7 +282,7 @@ function move(leftFwd, rightFwd) {
     if (leftFwd) {
         setLeftMotorMode(CCW);
     } else {
-        setLefttMotorMode(CW);
+        setLeftMotorMode(CW);
     }
 }
 
