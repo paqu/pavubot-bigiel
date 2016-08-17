@@ -1,8 +1,9 @@
 var io = require('socket.io-client');
 var fs = require('fs')
-var commandLineArgs = require('command-line-args');
 var cv = require('opencv');
-var logger = require('simple-logger');
+var logger   = require('simple-logger');
+var chokidar = require('chokidar');
+var commandLineArgs = require('command-line-args');
 
 var options = commandLineArgs([
         { name : 'host',alias:'h', type: String },
@@ -37,11 +38,21 @@ var camHeight = 240;
 var camInterval = 1000 / FPS;
 var camera;
 
+var rectColor = [0, 255, 0];
+var rectThickness = 2;
+
+var isDetectFaceActive = false;
+
 const VIDEO_SOCKET_ID = "video_socket_id";
+const DISTANCE_SENSOR_SONAR    = "distance_sensor_sonar";
+const DISTANCE_SENSOR_INFRARED = "distance_sensor_infrared";
 
 var paths = new Array();
 
-paths[VIDEO_SOCKET_ID] = PATH + "dev/ddal/socket/video_socketId";
+paths[VIDEO_SOCKET_ID]          = PATH + "dev/ddal/socket/video_socketId";
+paths[DISTANCE_SENSOR_SONAR]    = PATH + "dev/ddal/distance_sensor/sonar";
+paths[DISTANCE_SENSOR_INFRARED] = PATH + "dev/ddal/distance_sensor/infrared";
+
 
 camera = new cv.VideoCapture(0);
 camera.setWidth(camWidth);
@@ -103,8 +114,23 @@ conn.on("video::start_video",function () {
     interval = setInterval(function () {
         camera.read(function(err, im) {
             if (err) throw err;
-            logger("[emit]:server:video:frame");
-            conn.emit("server:video:frame",{ frame: im.toBuffer() });
+
+            if (isDetectFaceActive) {
+                im.detectObject('./node_modules/opencv/data/haarcascade_frontalface_alt2.xml',
+                      {}, function(err, faces) {
+
+                    if (err) throw err;
+
+                    for (var i = 0; i < faces.length; i++) {
+                      face = faces[i];
+                      im.rectangle([face.x, face.y], [face.width, face.height],
+                              rectColor, rectThickness);
+                    }
+
+                    logger("[emit]:server:video:frame");
+                    conn.emit("server:video:frame",{ frame: im.toBuffer() });
+                });
+            }else conn.emit("server:video:frame",{ frame: im.toBuffer() });
         });
     },camInterval);
 });
@@ -118,7 +144,57 @@ function writeToFile(path, value) {
 }
 
 
+var listener = {
+    distance_sensor_sonar:{},
+    distance_sensor_infrared:{}
+};
+
+listener.distance_sensor_sonar = chokidar.watch(paths[DISTANCE_SENSOR_SONAR], {
+    persistent: true
+});
+
+listener.distance_sensor_infrared = chokidar.watch(paths[DISTANCE_SENSOR_INFRARED], {
+    persistent: true
+});
 
 
+listener.distance_sensor_sonar.on('change',(path,event) => {
+    logger("Change event on " + path);
+
+    setTimeout(function (path) {
+        fs.readFile(paths[DISTANCE_SENSOR_SONAR],'utf8', (err, data) => {
+            if (err) throw err;
+
+            var distance = Number(data);
+
+            if (distance <= 15) {
+                isDetectFaceActive = true;
+            } else {
+                isDetectFaceActive = false;
+            }
+        });
+    },100);
+});
+
+listener.distance_sensor_infrared.on('change',(path,event) => {
+    logger("Change event on " + path);
+
+    setTimeout(function (path) {
+        fs.readFile(paths[DISTANCE_SENSOR_INFRARED],'utf8', (err, data) => {
+            if (err) throw err;
+
+            var distance = Number(data);
+
+            if (distance <= 15) {
+                isDetectFaceActive = true;
+            } else {
+                isDetectFaceActive = false;
+            }
+        });
+    },100);
+});
 
 
+function removeWhiteSigns(data) {
+    return data.replace(/^\s+|\s+$/g, "");
+}
