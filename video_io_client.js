@@ -122,6 +122,8 @@ conn.on("video::start_video",function () {
                     if (err) throw err;
 
                     for (var i = 0; i < faces.length; i++) {
+                      logger("[emit]:server:video:face");
+                      conn.emit("server:video:face",{ face: im.toBuffer() });
                       face = faces[i];
                       im.rectangle([face.x, face.y], [face.width, face.height],
                               rectColor, rectThickness);
@@ -130,7 +132,10 @@ conn.on("video::start_video",function () {
                     logger("[emit]:server:video:frame");
                     conn.emit("server:video:frame",{ frame: im.toBuffer() });
                 });
-            }else conn.emit("server:video:frame",{ frame: im.toBuffer() });
+            }else {
+                logger("[emit]:server:video:frame");
+                conn.emit("server:video:frame",{ frame: im.toBuffer() });
+            }
         });
     },camInterval);
 });
