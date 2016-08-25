@@ -34,7 +34,7 @@ var url = 'http://'+ HOST + ':' + PORT+'/video';
 var conn = io(url);
 var interval;
 var camWidth = 320;
-var camHeight = 240;
+var camHeight = 243;
 var camInterval = 1000 / FPS;
 var camera;
 
@@ -109,6 +109,8 @@ conn.on("video::stop_video", function () {
     clearInterval(interval);
 });
 
+var faceRecognizeInterval = true;
+
 conn.on("video::start_video",function () {
     logger("[on] video::start_video");
     interval = setInterval(function () {
@@ -129,8 +131,16 @@ conn.on("video::start_video",function () {
                               rectColor, rectThickness);
                     }
 
-                    logger("[emit]:server:video:frame");
-                    conn.emit("server:video:frame",{ frame: im.toBuffer() });
+                    if (faceRecognizeInterval) {
+                        logger("[emit]:server:video:frame");
+                        conn.emit("server:video:frame",{ frame: im.toBuffer() });
+                    }
+
+                    faceRecognizeInterval = false;
+                    setTimeout(function() {
+                        faceRecognizeInterval = true;
+                    },1000);
+
                 });
             }else {
                 logger("[emit]:server:video:frame");
