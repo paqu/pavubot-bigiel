@@ -56,18 +56,18 @@ const ROBOT_MODE               = "robot_mode";
 
 var paths = new Array();
 
-paths[CAMERA_ANGLE]             = PATH + "dev/ddal/servo/camera_angle";
-paths[VIDEO_SOCKET_ID]          = PATH + "dev/ddal/socket/video_socketId";
-paths[LEFT_MOTOR_MODE]          = PATH + "dev/ddal/motor/left_motor_mode";
-paths[RIGHT_MOTOR_MODE]         = PATH + "dev/ddal/motor/right_motor_mode";
-paths[LEFT_MOTOR_SPEED]         = PATH + "dev/ddal/motor/left_motor_speed";
-paths[RIGHT_MOTOR_SPEED]        = PATH + "dev/ddal/motor/right_motor_speed";
-paths[MOTOR_SUSPEND]            = PATH + "dev/ddal/motor/suspend";
-paths[DISTANCE_SENSOR_SONAR]    = PATH + "dev/ddal/distance_sensor/sonar";
-paths[DISTANCE_SENSOR_INFRARED] = PATH + "dev/ddal/distance_sensor/infrared";
-paths[LEFT_ENCODER_DISTANCE]    = PATH + "dev/ddal/encoder/left_encoder_distance";
-paths[RIGHT_ENCODER_DISTANCE]   = PATH + "dev/ddal/encoder/right_encoder_distance";
-paths[ROBOT_NAME]               = PATH + "dev/ddal/robot_info/robot_name";
+paths[CAMERA_ANGLE]             = PATH + "ddal/servo/camera_angle";
+paths[VIDEO_SOCKET_ID]          = PATH + "ddal/socket/video_socketId";
+paths[LEFT_MOTOR_MODE]          = PATH + "ddal/motor/left_motor_mode";
+paths[RIGHT_MOTOR_MODE]         = PATH + "ddal/motor/right_motor_mode";
+paths[LEFT_MOTOR_SPEED]         = PATH + "ddal/motor/left_motor_speed";
+paths[RIGHT_MOTOR_SPEED]        = PATH + "ddal/motor/right_motor_speed";
+paths[MOTOR_SUSPEND]            = PATH + "ddal/motor/suspend";
+paths[DISTANCE_SENSOR_SONAR]    = PATH + "ddal/distance_sensor/sonar";
+paths[DISTANCE_SENSOR_INFRARED] = PATH + "ddal/distance_sensor/infrared";
+paths[LEFT_ENCODER_DISTANCE]    = PATH + "ddal/encoder/left_encoder_distance";
+paths[RIGHT_ENCODER_DISTANCE]   = PATH + "ddal/encoder/right_encoder_distance";
+paths[ROBOT_NAME]               = PATH + "ddal/robot_info/robot_name";
 
 var init_data = {} 
 var init_data_to_send = [LEFT_MOTOR_SPEED, RIGHT_MOTOR_SPEED, LEFT_ENCODER_DISTANCE,
