@@ -38,8 +38,8 @@ const CAMERA_CENTER   = 90;
 const MOTOR_MIN_SPEED = 0;
 const MOTOR_MAX_SPEED = 100;
 
-const MOTOR_SUSPEND_ACTIVE   = 0;
-const MOTOR_SUSPEND_INACTIVE = 1;
+const MOTOR_SUSPEND_ACTIVE   = 1;
+const MOTOR_SUSPEND_INACTIVE = 0;
 
 const CAMERA_SUSPEND_ACTIVE   = 1;
 const CAMERA_SUSPEND_INACTIVE = 0;
@@ -232,7 +232,7 @@ Robot.prototype.stop = function () {
 Robot.prototype.turnOn = function () {
     setRightMotorSpeed(MOTOR_MAX_SPEED);
     setLeftMotorSpeed(MOTOR_MAX_SPEED);
-    setMotorSuspend(MOTOR_SUSPEND_ACTIVE);
+    setMotorSuspend(MOTOR_SUSPEND_INACTIVE);
     setCameraAngle(CAMERA_CENTER);
     setCameraSuspend(CAMERA_SUSPEND_INACTIVE);
 }
@@ -242,7 +242,7 @@ Robot.prototype.turnOff = function () {
     setLeftMotorSpeed(MOTOR_MIN_SPEED);
     setLeftMotorMode(STOP);
     setRightMotorMode(STOP);
-    setMotorSuspend(MOTOR_SUSPEND_INACTIVE);
+    setMotorSuspend(MOTOR_SUSPEND_ACTIVE);
     setCameraSuspend(CAMERA_SUSPEND_ACTIVE);
 }
 
