@@ -41,7 +41,11 @@ const MOTOR_MAX_SPEED = 100;
 const MOTOR_SUSPEND_ACTIVE   = 0;
 const MOTOR_SUSPEND_INACTIVE = 1;
 
+const CAMERA_SUSPEND_ACTIVE   = 1;
+const CAMERA_SUSPEND_INACTIVE = 0;
+
 const CAMERA_ANGLE             = "camera_angle";
+const CAMERA_SUSPEND           = "camera_suspend";
 const VIDEO_SOCKET_ID          = "video_socket_id";
 const LEFT_MOTOR_MODE          = "left_motor_mode";
 const RIGHT_MOTOR_MODE         = "right_motor_mode";
@@ -58,6 +62,7 @@ const ROBOT_MODE               = "robot_mode";
 var paths = new Array();
 
 paths[CAMERA_ANGLE]             = PATH + "ddal/servo/camera_angle";
+paths[CAMERA_SUSPEND]           = PATH + "ddal/servo/camera_suspend";
 paths[VIDEO_SOCKET_ID]          = PATH + "ddal/socket/video_socketId";
 paths[LEFT_MOTOR_MODE]          = PATH + "ddal/motor/left_motor_mode";
 paths[RIGHT_MOTOR_MODE]         = PATH + "ddal/motor/right_motor_mode";
@@ -229,6 +234,7 @@ Robot.prototype.turnOn = function () {
     setLeftMotorSpeed(MOTOR_MAX_SPEED);
     setMotorSuspend(MOTOR_SUSPEND_ACTIVE);
     setCameraAngle(CAMERA_CENTER);
+    setCameraSuspend(CAMERA_SUSPEND_INACTIVE);
 }
 
 Robot.prototype.turnOff = function () {
@@ -237,6 +243,7 @@ Robot.prototype.turnOff = function () {
     setLeftMotorMode(STOP);
     setRightMotorMode(STOP);
     setMotorSuspend(MOTOR_SUSPEND_INACTIVE);
+    setCameraSuspend(CAMERA_SUSPEND_ACTIVE);
 }
 
 Robot.prototype.cameraAngleTo = function (val) {
@@ -250,6 +257,10 @@ Robot.prototype.updateSpeedBoth = function (left, right) {
 
 function setMotorSuspend(val) {
     writeToFile(paths[MOTOR_SUSPEND], val);
+}
+
+function setCameraSuspend(val) {
+    writeToFile(paths[CAMERA_SUSPEND], val);
 }
 
 function setLeftMotorMode(val) {
