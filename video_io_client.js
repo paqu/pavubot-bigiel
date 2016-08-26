@@ -110,6 +110,7 @@ conn.on("video::stop_video", function () {
 });
 
 var faceRecognizeInterval = true;
+var faceCascade = './node_modules/opencv/data/haarcascade_frontalface_alt2.xml';
 
 conn.on("video::start_video",function () {
     logger("[on] video::start_video");
@@ -118,8 +119,7 @@ conn.on("video::start_video",function () {
             if (err) throw err;
 
             if (isDetectFaceActive) {
-                im.detectObject('./node_modules/opencv/data/haarcascade_frontalface_alt2.xml',
-                      {}, function(err, faces) {
+                im.detectObject(faceCascade,{}, function(err, faces) {
 
                     if (err) throw err;
 
