@@ -49,9 +49,9 @@ const DISTANCE_SENSOR_INFRARED = "distance_sensor_infrared";
 
 var paths = new Array();
 
-paths[VIDEO_SOCKET_ID]          = PATH + "dev/ddal/socket/video_socketId";
-paths[DISTANCE_SENSOR_SONAR]    = PATH + "dev/ddal/distance_sensor/sonar";
-paths[DISTANCE_SENSOR_INFRARED] = PATH + "dev/ddal/distance_sensor/infrared";
+paths[VIDEO_SOCKET_ID]          = PATH + "ddal/socket/video_socketId";
+paths[DISTANCE_SENSOR_SONAR]    = PATH + "ddal/distance_sensor/sonar";
+paths[DISTANCE_SENSOR_INFRARED] = PATH + "ddal/distance_sensor/infrared";
 
 
 camera = new cv.VideoCapture(0);
