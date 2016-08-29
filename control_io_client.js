@@ -38,7 +38,7 @@ const CW   = "cw";
 const CCW  = "ccw";
 
 const CAMERA_OFFSET   = 90;
-const CAMERA_CENTER   = 90;
+const CAMERA_CENTER   = 0;
 
 const MOTOR_MIN_SPEED = 0;
 const MOTOR_MAX_SPEED = 100;
@@ -260,9 +260,11 @@ Robot.prototype.stop = function () {
 Robot.prototype.turnOn = function () {
     setRightMotorSpeed(MOTOR_MAX_SPEED);
     setLeftMotorSpeed(MOTOR_MAX_SPEED);
+    setLeftMotorMode(STOP);
+    setRightMotorMode(STOP);
     setMotorSuspend(MOTOR_SUSPEND_INACTIVE);
-    setCameraAngle(CAMERA_CENTER);
     setCameraSuspend(CAMERA_SUSPEND_INACTIVE);
+    setCameraAngle(CAMERA_CENTER);
 }
 
 Robot.prototype.turnOff = function () {
