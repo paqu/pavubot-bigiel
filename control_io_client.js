@@ -208,7 +208,7 @@ Robot.prototype.getMode = function () {
     return this.mode;
 }
 Robot.prototype.setMode = function (val) {
-    logger("Robot set mode to: " + val);
+    logger("Robot set mode to: " + translateModeCode(val));
     this.mode = val;
 }
 
@@ -462,3 +462,14 @@ conn.on('disconnect', function () {
     logger("Server was disconnected");
     robot.turnOff();
 });
+
+function translateModeCode(code) {
+    switch (code) {
+        case 0:
+            return "auto mode";
+        case 1:
+            return "manual mode";
+        default:
+            return "undefined mode";
+    }
+}
