@@ -28,6 +28,8 @@ var url = 'http://'+ HOST + ':' + PORT+'/control';
 const ROBOT_AUTO_MODE   = 0;
 const ROBOT_MANUAL_MODE = 1;
 
+const GO_STRAIGHT = 1;
+
 const STOP = "stop";
 const CW   = "cw";
 const CCW  = "ccw";
@@ -199,6 +201,7 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
 
 var Robot = function (mode) {
     this.mode = mode;
+    this.state = -1;
 };
 
 Robot.prototype.getMode = function () {
@@ -206,6 +209,14 @@ Robot.prototype.getMode = function () {
 }
 Robot.prototype.setMode = function (val) {
     this.mode = val;
+}
+
+Robot.prototype.getState = function () {
+    return this.state;
+}
+Robot.prototype.setState = function (val) {
+    logger("Robot set state to: " + val);
+    this.state = val;
 }
 
 Robot.prototype.goStraight = function () {
@@ -405,9 +416,9 @@ conn.on("robot::automode", function() {
     logger("[on] robot::automode");
     robot.setMode(ROBOT_AUTO_MODE);
     logger("Robot in AUTO MODE");
+    robot.setState(GO_STRAIGHT)
     robot.goStraight();
 });
-
 
 /* Error handling */
 conn.on('connect_error', function (err) {
