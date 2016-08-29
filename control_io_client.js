@@ -208,6 +208,7 @@ Robot.prototype.getMode = function () {
     return this.mode;
 }
 Robot.prototype.setMode = function (val) {
+    logger("Robot set mode to: " + val);
     this.mode = val;
 }
 
@@ -415,7 +416,6 @@ conn.on("robot::update_speed_both", function(data) {
 conn.on("robot::automode", function() {
     logger("[on] robot::automode");
     robot.setMode(ROBOT_AUTO_MODE);
-    logger("Robot in AUTO MODE");
     robot.setState(GO_STRAIGHT)
     robot.goStraight();
 });
