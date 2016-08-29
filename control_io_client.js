@@ -401,6 +401,14 @@ conn.on("robot::update_speed_both", function(data) {
     robot.updateSpeedBoth(left,right);
 });
 
+conn.on("robot::automode", function() {
+    logger("[on] robot::automode");
+    robot.setMode(ROBOT_AUTO_MODE);
+    logger("Robot in AUTO MODE");
+    robot.goStraight();
+});
+
+
 /* Error handling */
 conn.on('connect_error', function (err) {
     logger("Connect error: " + err);
