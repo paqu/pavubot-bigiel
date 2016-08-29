@@ -420,6 +420,12 @@ conn.on("robot::automode", function() {
     robot.goStraight();
 });
 
+conn.on("robot::manualmode", function() {
+    logger("[on] robot::manualmode");
+    robot.setMode(ROBOT_MANUAL_MODE);
+    robot.stop();
+});
+
 /* Error handling */
 conn.on('connect_error', function (err) {
     logger("Connect error: " + err);
