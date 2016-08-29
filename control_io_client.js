@@ -28,7 +28,8 @@ var url = 'http://'+ HOST + ':' + PORT+'/control';
 const ROBOT_AUTO_MODE   = 0;
 const ROBOT_MANUAL_MODE = 1;
 
-const GO_STRAIGHT = 1;
+const GO_STRAIGHT_STATE = 0;
+const STOP_STATE        = 1;
 
 const STOP = "stop";
 const CW   = "cw";
@@ -216,7 +217,7 @@ Robot.prototype.getState = function () {
     return this.state;
 }
 Robot.prototype.setState = function (val) {
-    logger("Robot set state to: " + val);
+    logger("Robot set state to: " + translateStateCode(val));
     this.state = val;
 }
 
@@ -416,13 +417,14 @@ conn.on("robot::update_speed_both", function(data) {
 conn.on("robot::automode", function() {
     logger("[on] robot::automode");
     robot.setMode(ROBOT_AUTO_MODE);
-    robot.setState(GO_STRAIGHT)
+    robot.setState(GO_STRAIGHT_STATE);
     robot.goStraight();
 });
 
 conn.on("robot::manualmode", function() {
     logger("[on] robot::manualmode");
     robot.setMode(ROBOT_MANUAL_MODE);
+    robot.setState(STOP_STATE)
     robot.stop();
 });
 
@@ -471,5 +473,16 @@ function translateModeCode(code) {
             return "manual mode";
         default:
             return "undefined mode";
+    }
+}
+
+function translateStateCode(code) {
+    switch (code) {
+        case GO_STRAIGHT_STATE:
+            return "go straight";
+        case STOP_STATE:
+            return "stop";
+        default:
+            return "undefined state";
     }
 }
