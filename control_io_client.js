@@ -328,7 +328,7 @@ function move(leftFwd, rightFwd) {
     }
 }
 
-var robot = new Robot(ROBOT_AUTO_MODE);
+var robot = new Robot(ROBOT_MANUAL_MODE);
 
 var conn = io(url);
 
