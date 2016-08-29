@@ -203,6 +203,11 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
 var Robot = function (mode) {
     this.mode = mode;
     this.state = -1;
+
+    function setState(val) {
+        logger("Robot set state to: " + translateStateCode(val));
+        this.state = val;
+    }
 };
 
 Robot.prototype.getMode = function () {
@@ -238,6 +243,7 @@ Robot.prototype.turnRight = function () {
 }
 
 Robot.prototype.stop = function () {
+    this.setState(STOP_STATE);
     setRightMotorMode(STOP);
     setLeftMotorMode(STOP);
 }
@@ -424,7 +430,6 @@ conn.on("robot::automode", function() {
 conn.on("robot::manualmode", function() {
     logger("[on] robot::manualmode");
     robot.setMode(ROBOT_MANUAL_MODE);
-    robot.setState(STOP_STATE)
     robot.stop();
 });
 
