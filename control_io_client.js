@@ -31,6 +31,8 @@ const ROBOT_MANUAL_MODE = 1;
 const GO_STRAIGHT_STATE = 0;
 const STOP_STATE        = 1;
 
+const STOP_DISTANCE = 15.0
+
 const STOP = "stop";
 const CW   = "cw";
 const CCW  = "ccw";
@@ -188,6 +190,8 @@ listener.distance_sensor_sonar.on('change',(path,event) => {
 });
 
 listener.distance_sensor_infrared.on('change',(path,event) => {
+    var distance;
+
     logger("Change event on " + path);
 
     setTimeout(function (path) {
@@ -196,6 +200,10 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
 
             logger("[emit] server:control:update_distance_sensor_infrared:" + data);
             conn.emit("server:control:update_distance_sensor_infrared",{distance_sensor_infrared:removeWhiteSigns(data)});
+
+            if (robot.getMode() == ROBOT_AUTO_MODE && distance <= STOP_DISTANCE) {
+                robot.stop();
+            }
         });
     },100);
 });
@@ -227,6 +235,7 @@ Robot.prototype.setState = function (val) {
 }
 
 Robot.prototype.goStraight = function () {
+    this.setState(GO_STRAIGHT_STATE);
     move(true, true);
 }
 
@@ -423,7 +432,6 @@ conn.on("robot::update_speed_both", function(data) {
 conn.on("robot::automode", function() {
     logger("[on] robot::automode");
     robot.setMode(ROBOT_AUTO_MODE);
-    robot.setState(GO_STRAIGHT_STATE);
     robot.goStraight();
 });
 
@@ -491,3 +499,4 @@ function translateStateCode(code) {
             return "undefined state";
     }
 }
+
