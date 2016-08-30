@@ -34,7 +34,7 @@ var url = 'http://'+ HOST + ':' + PORT+'/video';
 var conn = io(url);
 var interval;
 var camWidth = 320;
-var camHeight = 243;
+var camHeight = 240;
 var camInterval = 1000 / FPS;
 var camera;
 
