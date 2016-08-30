@@ -50,8 +50,10 @@ const DISTANCE_SENSOR_INFRARED = "distance_sensor_infrared";
 var paths = new Array();
 
 paths[VIDEO_SOCKET_ID]          = PATH + "ddal/socket/video_socketId";
+/*
 paths[DISTANCE_SENSOR_SONAR]    = PATH + "ddal/distance_sensor/sonar";
 paths[DISTANCE_SENSOR_INFRARED] = PATH + "ddal/distance_sensor/infrared";
+*/
 
 
 camera = new cv.VideoCapture(0);
@@ -158,6 +160,7 @@ function writeToFile(path, value) {
     });
 }
 
+/*
 
 var listener = {
     distance_sensor_sonar:{},
@@ -209,6 +212,7 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
     },100);
 });
 
+*/
 
 function removeWhiteSigns(data) {
     return data.replace(/^\s+|\s+$/g, "");
