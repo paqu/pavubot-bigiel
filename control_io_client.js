@@ -33,6 +33,8 @@ const STOP_STATE        = 1;
 
 const STOP_DISTANCE = 30.0
 
+const DEFAULT_SPEED = 75
+
 const STOP = "stop";
 const CW   = "cw";
 const CCW  = "ccw";
@@ -260,8 +262,8 @@ Robot.prototype.stop = function () {
 }
 
 Robot.prototype.turnOn = function () {
-    setRightMotorSpeed(MOTOR_MAX_SPEED);
-    setLeftMotorSpeed(MOTOR_MAX_SPEED);
+    setRightMotorSpeed(DEFAULT_SPEED);
+    setLeftMotorSpeed(DEFAULT_SPEED);
     setLeftMotorMode(STOP);
     setRightMotorMode(STOP);
     setMotorSuspend(MOTOR_SUSPEND_INACTIVE);
