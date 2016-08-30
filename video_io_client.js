@@ -10,12 +10,14 @@ var options = commandLineArgs([
         { name : 'port',alias:'p', type: Number },
         { name : 'path',alias:'P', type: String },
         { name : 'fps' ,alias:'f', type: Number },
+        { name : 'modules_path' ,alias:'m', type: String },
 ]);
 
 var FPS  = options.fps;
 var PORT = options.port;
 var HOST = options.host;
 var PATH = options.path
+var MODULES_PATH  = options.modules_path
 
 if (!FPS)
     FPS = 20;
@@ -28,6 +30,9 @@ if (!HOST)
 
 if (!PATH)
     PATH = '';
+
+if (!MODULES_PATH)
+   MODULES_PATH  = '.';
 
 var url = 'http://'+ HOST + ':' + PORT+'/video';
 
@@ -112,7 +117,7 @@ conn.on("video::stop_video", function () {
 });
 
 var faceRecognizeInterval = true;
-var faceCascade = './node_modules/opencv/data/haarcascade_frontalface_alt2.xml';
+var faceCascade = MODULES_PATH + '/node_modules/opencv/data/haarcascade_frontalface_alt2.xml';
 
 conn.on("video::start_video",function () {
     logger("[on] video::start_video");
