@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var io = require('socket.io-client');
 var fs = require('fs')
 var cv = require('opencv');
