@@ -49,17 +49,12 @@ var rectThickness = 2;
 var isDetectFaceActive = false;
 
 const VIDEO_SOCKET_ID = "video_socket_id";
-const DISTANCE_SENSOR_SONAR    = "distance_sensor_sonar";
-const DISTANCE_SENSOR_INFRARED = "distance_sensor_infrared";
+const VIDEO_PROCESSING = "video_processing";
 
 var paths = new Array();
 
 paths[VIDEO_SOCKET_ID]          = PATH + "ddal/socket/video_socketId";
-/*
-paths[DISTANCE_SENSOR_SONAR]    = PATH + "ddal/distance_sensor/sonar";
-paths[DISTANCE_SENSOR_INFRARED] = PATH + "ddal/distance_sensor/infrared";
-*/
-
+paths[VIDEO_PROCESSING]         = PATH + "ddal/video/video_processing";
 
 camera = new cv.VideoCapture(0);
 camera.setWidth(camWidth);
@@ -165,60 +160,33 @@ function writeToFile(path, value) {
     });
 }
 
-/*
-
 var listener = {
-    distance_sensor_sonar:{},
-    distance_sensor_infrared:{}
+    video_processing: {}
 };
 
-listener.distance_sensor_sonar = chokidar.watch(paths[DISTANCE_SENSOR_SONAR], {
+listener.video_processing = chokidar.watch(paths[VIDEO_PROCESSING], {
     persistent: true
 });
 
-listener.distance_sensor_infrared = chokidar.watch(paths[DISTANCE_SENSOR_INFRARED], {
-    persistent: true
-});
-
-
-listener.distance_sensor_sonar.on('change',(path,event) => {
+listener.video_processing.on('change',(path,event) => {
     logger("Change event on " + path);
 
     setTimeout(function (path) {
-        fs.readFile(paths[DISTANCE_SENSOR_SONAR],'utf8', (err, data) => {
+        fs.readFile(paths[VIDEO_PROCESSING],'utf8', (err, data) => {
             if (err) throw err;
 
-            var distance = Number(data);
+            data = removeWhiteSigns(data);
 
-            if (distance <= 15) {
+            if (data == "start") {
+                console.log("Wszedlem");
                 isDetectFaceActive = true;
             } else {
+                console.log("nie wszedlem");
                 isDetectFaceActive = false;
             }
         });
     },100);
 });
-
-listener.distance_sensor_infrared.on('change',(path,event) => {
-    logger("Change event on " + path);
-
-    setTimeout(function (path) {
-        fs.readFile(paths[DISTANCE_SENSOR_INFRARED],'utf8', (err, data) => {
-            if (err) throw err;
-
-            var distance = Number(data);
-
-            if (distance <= 15) {
-                isDetectFaceActive = true;
-            } else {
-                isDetectFaceActive = false;
-            }
-        });
-    },100);
-});
-
-*/
-
 function removeWhiteSigns(data) {
     return data.replace(/^\s+|\s+$/g, "");
 }
