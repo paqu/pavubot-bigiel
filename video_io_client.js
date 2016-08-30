@@ -16,8 +16,8 @@ var options = commandLineArgs([
 var FPS  = options.fps;
 var PORT = options.port;
 var HOST = options.host;
-var PATH = options.path
-var MODULES_PATH  = options.modules_path
+var PATH = options.path;
+var MODULES_PATH  = options.modules_path;
 
 if (!FPS)
     FPS = 20;
