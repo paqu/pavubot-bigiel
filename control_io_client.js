@@ -31,7 +31,7 @@ const ROBOT_MANUAL_MODE = 1;
 const GO_STRAIGHT_STATE = 0;
 const STOP_STATE        = 1;
 
-const STOP_DISTANCE = 15.0
+const STOP_DISTANCE = 30.0
 
 const STOP = "stop";
 const CW   = "cw";
@@ -200,6 +200,8 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
 
             logger("[emit] server:control:update_distance_sensor_infrared:" + data);
             conn.emit("server:control:update_distance_sensor_infrared",{distance_sensor_infrared:removeWhiteSigns(data)});
+
+            distance = parseFloat(data);
 
             if (robot.getMode() == ROBOT_AUTO_MODE && distance <= STOP_DISTANCE) {
                 robot.stop();
