@@ -32,6 +32,7 @@ const ROBOT_MANUAL_MODE = 1;
 
 const GO_STRAIGHT_STATE = 0;
 const STOP_STATE        = 1;
+const TURN_STATE        = 2;
 
 const STOP_DISTANCE = 30.0
 
@@ -89,6 +90,7 @@ paths[RIGHT_ENCODER_DISTANCE]   = PATH + "ddal/encoder/right_encoder_distance";
 paths[LEFT_ENCODER_RESET]       = PATH + "ddal/encoder/left_encoder_reset";
 paths[RIGHT_ENCODER_RESET]      = PATH + "ddal/encoder/right_encoder_reset";
 paths[ROBOT_NAME]               = PATH + "ddal/robot_info/robot_name";
+
 
 var init_data = {} 
 var init_data_to_send = [LEFT_MOTOR_SPEED, RIGHT_MOTOR_SPEED, LEFT_ENCODER_DISTANCE,
@@ -280,6 +282,7 @@ Robot.prototype.turnLeft = function () {
 Robot.prototype.turnRight = function () {
     move(true, false);
 }
+
 
 Robot.prototype.stop = function () {
     this.setState(STOP_STATE);
@@ -527,6 +530,8 @@ function translateStateCode(code) {
             return "go straight";
         case STOP_STATE:
             return "stop";
+        case TURN_STATE:
+            return "turn state";
         default:
             return "undefined state";
     }
