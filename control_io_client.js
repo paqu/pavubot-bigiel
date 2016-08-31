@@ -124,7 +124,8 @@ var listener = {
     right_encoder_distance:{},
     left_encoder_distance:{},
     distance_sensor_sonar:{},
-    distance_sensor_infrared:{}
+    distance_sensor_infrared:{},
+    gyro_angle:{}
 };
 
 listener.video_socketId = chokidar.watch(paths[VIDEO_SOCKET_ID], {
@@ -144,6 +145,10 @@ listener.distance_sensor_sonar = chokidar.watch(paths[DISTANCE_SENSOR_SONAR], {
 });
 
 listener.distance_sensor_infrared = chokidar.watch(paths[DISTANCE_SENSOR_INFRARED], {
+    persistent: true
+});
+
+listener.gyro_angle = chokidar.watch(paths[GYRO_ANGLE], {
     persistent: true
 });
 
@@ -216,6 +221,18 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
             if (robot.getMode() == ROBOT_AUTO_MODE && distance <= STOP_DISTANCE) {
                 robot.stop();
             }
+        });
+    },100);
+});
+listener.gyro_angle.on('change',(path,event) => {
+    var distance;
+
+    logger("Change event on " + path);
+
+    setTimeout(function (path) {
+        fs.readFile(paths[GYRO_ANGLE],'utf8', (err, data) => {
+            if (err) throw err;
+            logger("Gyro change  to : " + removeWhiteSigns(data));
         });
     },100);
 });
