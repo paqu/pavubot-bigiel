@@ -247,6 +247,7 @@ var Robot = function (mode) {
     }
 };
 
+
 Robot.prototype.getMode = function () {
     return this.mode;
 }
@@ -531,3 +532,7 @@ function translateStateCode(code) {
     }
 }
 
+function getGyroAngleSync() {
+    var data = fs.readFileSync(paths[GYRO_ANGLE],'utf8');
+    return removeWhiteSigns(data);
+}
