@@ -166,39 +166,39 @@ listener.video_socketId.on("change",(path,event) => {
 });
 
 listener.left_encoder_distance.on('change',(path,event) => {
-    logger("Change event on " + path);
+    //logger("Change event on " + path);
 
     setTimeout(function (path) {
         fs.readFile(paths[LEFT_ENCODER_DISTANCE],'utf8', (err, data) => {
             if (err) throw err;
 
-            logger("[emit] server:control:update_left_encoder_distance:" + data);
+            //logger("[emit] server:control:update_left_encoder_distance:" + data);
             conn.emit("server:control:update_left_encoder_distance",{left_encoder_distance:removeWhiteSigns(data)});
         });
     },100);
 });
 
 listener.right_encoder_distance.on('change',(path,event) => {
-    logger("Change event on " + path);
+    //logger("Change event on " + path);
 
     setTimeout(function (path) {
         fs.readFile(paths[RIGHT_ENCODER_DISTANCE],'utf8', (err, data) => {
             if (err) throw err;
 
-            logger("[emit] server:control:update_right_encoder_distance:" + data);
+            //logger("[emit] server:control:update_right_encoder_distance:" + data);
             conn.emit("server:control:update_right_encoder_distance",{right_encoder_distance:removeWhiteSigns(data)});
         });
     },100);
 });
 
 listener.distance_sensor_sonar.on('change',(path,event) => {
-    logger("Change event on " + path);
+    //logger("Change event on " + path);
 
     setTimeout(function (path) {
         fs.readFile(paths[DISTANCE_SENSOR_SONAR],'utf8', (err, data) => {
             if (err) throw err;
 
-            logger("[emit] server:control:update_distance_sensor_sonar:" + data);
+            //logger("[emit] server:control:update_distance_sensor_sonar:" + data);
             conn.emit("server:control:update_distance_sensor_sonar",{distance_sensor_sonar:removeWhiteSigns(data)});
         });
     },100);
@@ -207,13 +207,13 @@ listener.distance_sensor_sonar.on('change',(path,event) => {
 listener.distance_sensor_infrared.on('change',(path,event) => {
     var distance;
 
-    logger("Change event on " + path);
+    //logger("Change event on " + path);
 
     setTimeout(function (path) {
         fs.readFile(paths[DISTANCE_SENSOR_INFRARED],'utf8', (err, data) => {
             if (err) throw err;
 
-            logger("[emit] server:control:update_distance_sensor_infrared:" + data);
+            //logger("[emit] server:control:update_distance_sensor_infrared:" + data);
             conn.emit("server:control:update_distance_sensor_infrared",{distance_sensor_infrared:removeWhiteSigns(data)});
 
             distance = parseFloat(data);
