@@ -221,7 +221,9 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
 
             distance = parseFloat(data);
 
-            if (robot.getMode() == ROBOT_AUTO_MODE && distance <= STOP_DISTANCE) {
+            if (robot.getMode() == ROBOT_AUTO_MODE
+             && robot.getState() == GO_STRAIGHT_STATE
+             && distance <= STOP_DISTANCE) {
                 robot.stop();
                 setTimeout(function() {
                     robot.turnRightBy(90.0);
@@ -303,6 +305,9 @@ Robot.prototype.turnRightBy = function (angle) {
     current_gyro_angle = parseFloat(current_gyro_angle);
     angle = parseFloat(angle);
     expected_gyro_angle = current_gyro_angle + angle;
+    if (expected_gyro_angle > 360.0) {
+        expected_gyro_angle %= 360.0;
+    }
     logger("New expected gyro angle: " + expected_gyro_angle);
     this.setState(TURN_STATE);
     move(true, false);
