@@ -45,18 +45,14 @@ var camHeight = 240;
 var camInterval = 1000 / FPS;
 var camera;
 
-var rectColor = [0, 255, 0];
-var rectThickness = 2;
 
-var isDetectFaceActive = false;
+var isDetectFaceActive;
 
 const VIDEO_SOCKET_ID = "video_socket_id";
-const VIDEO_PROCESSING = "video_processing";
 
 var paths = new Array();
 
-paths[VIDEO_SOCKET_ID]          = PATH + "ddal/socket/video_socketId";
-paths[VIDEO_PROCESSING]         = PATH + "ddal/video/video_processing";
+paths[VIDEO_SOCKET_ID] = PATH + "ddal/socket/video_socketId";
 
 camera = new cv.VideoCapture(0);
 camera.setWidth(camWidth);
@@ -113,47 +109,17 @@ conn.on("video::stop_video", function () {
     clearInterval(interval);
 });
 
-var faceRecognizeInterval = true;
-var faceCascade = MODULES_PATH + '/node_modules/opencv/data/haarcascade_frontalface_alt2.xml';
-
 conn.on("video::start_video",function () {
     logger("[on] video::start_video");
     interval = setInterval(function () {
         camera.read(function(err, im) {
             if (err) throw err;
 
-            if (isDetectFaceActive) {
-                im.detectObject(faceCascade,{}, function(err, faces) {
-
-                    if (err) throw err;
-
-                    for (var i = 0; i < faces.length; i++) {
-                      logger("[emit]:server:video:face");
-                      conn.emit("server:video:face",{ face: im.toBuffer() });
-                      face = faces[i];
-                      im.rectangle([face.x, face.y], [face.width, face.height],
-                              rectColor, rectThickness);
-                    }
-
-                    if (faceRecognizeInterval) {
-                        logger("[emit]:server:video:frame");
-                        conn.emit("server:video:frame",{ frame: im.toBuffer() });
-                    }
-
-                    faceRecognizeInterval = false;
-                    setTimeout(function() {
-                        faceRecognizeInterval = true;
-                    },1000);
-
-                });
-            }else {
-                logger("[emit]:server:video:frame");
-                conn.emit("server:video:frame",{ frame: im.toBuffer() });
-            }
+            logger("[emit]:server:video:frame");
+            conn.emit("server:video:frame",{ frame: im.toBuffer() });
         });
     },camInterval);
 });
-
 
 function writeToFile(path, value) {
     fs.writeFile(path, value, (err) => {
@@ -161,34 +127,6 @@ function writeToFile(path, value) {
           logger('Write  (' + value +') to ' + path);
     });
 }
-
-var listener = {
-    video_processing: {}
-};
-
-listener.video_processing = chokidar.watch(paths[VIDEO_PROCESSING], {
-    persistent: true
-});
-
-listener.video_processing.on('change',(path,event) => {
-    logger("Change event on " + path);
-
-    setTimeout(function (path) {
-        fs.readFile(paths[VIDEO_PROCESSING],'utf8', (err, data) => {
-            if (err) throw err;
-
-            data = removeWhiteSigns(data);
-
-            if (data == "start") {
-                console.log("Wszedlem");
-                isDetectFaceActive = true;
-            } else {
-                console.log("nie wszedlem");
-                isDetectFaceActive = false;
-            }
-        });
-    },100);
-});
 function removeWhiteSigns(data) {
     return data.replace(/^\s+|\s+$/g, "");
 }
