@@ -66,6 +66,8 @@ const DISTANCE_SENSOR_SONAR    = "distance_sensor_sonar";
 const DISTANCE_SENSOR_INFRARED = "distance_sensor_infrared";
 const LEFT_ENCODER_DISTANCE    = "left_encoder_distance";
 const RIGHT_ENCODER_DISTANCE   = "right_encoder_distance";
+const LEFT_ENCODER_RESET       = "left_encoder_reset;
+const RIGHT_ENCODER_RESET      = "right_encoder_reset";
 const ROBOT_NAME               = "robot_name";
 const ROBOT_MODE               = "robot_mode";
 
@@ -84,6 +86,8 @@ paths[DISTANCE_SENSOR_SONAR]    = PATH + "ddal/distance_sensor/sonar";
 paths[DISTANCE_SENSOR_INFRARED] = PATH + "ddal/distance_sensor/infrared";
 paths[LEFT_ENCODER_DISTANCE]    = PATH + "ddal/encoder/left_encoder_distance";
 paths[RIGHT_ENCODER_DISTANCE]   = PATH + "ddal/encoder/right_encoder_distance";
+paths[LEFT_ENCODER_RESET]       = PATH + "ddal/encoder/left_encoder_reset";
+paths[RIGHT_ENCODER_RESET]      = PATH + "ddal/encoder/right_encoder_reset";
 paths[ROBOT_NAME]               = PATH + "ddal/robot_info/robot_name";
 
 var init_data = {} 
