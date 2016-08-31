@@ -55,6 +55,7 @@ const CAMERA_SUSPEND_INACTIVE = 0;
 
 const CAMERA_ANGLE             = "camera_angle";
 const CAMERA_SUSPEND           = "camera_suspend";
+const GYRO_ANGLE               = "gyro_angle";
 const VIDEO_SOCKET_ID          = "video_socket_id";
 const LEFT_MOTOR_MODE          = "left_motor_mode";
 const RIGHT_MOTOR_MODE         = "right_motor_mode";
@@ -72,6 +73,7 @@ var paths = new Array();
 
 paths[CAMERA_ANGLE]             = PATH + "ddal/servo/camera_angle";
 paths[CAMERA_SUSPEND]           = PATH + "ddal/servo/camera_suspend";
+paths[GYRO_ANGLE]               = PATH + "ddal/gyro/angle";
 paths[VIDEO_SOCKET_ID]          = PATH + "ddal/socket/video_socketId";
 paths[LEFT_MOTOR_MODE]          = PATH + "ddal/motor/left_motor_mode";
 paths[RIGHT_MOTOR_MODE]         = PATH + "ddal/motor/right_motor_mode";
