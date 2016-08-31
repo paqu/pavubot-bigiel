@@ -92,6 +92,7 @@ paths[RIGHT_ENCODER_RESET]      = PATH + "ddal/encoder/right_encoder_reset";
 paths[ROBOT_NAME]               = PATH + "ddal/robot_info/robot_name";
 
 
+var expected_gyro_angle;
 var init_data = {} 
 var init_data_to_send = [LEFT_MOTOR_SPEED, RIGHT_MOTOR_SPEED, LEFT_ENCODER_DISTANCE,
     RIGHT_ENCODER_DISTANCE, CAMERA_ANGLE, DISTANCE_SENSOR_SONAR, DISTANCE_SENSOR_INFRARED,
@@ -222,12 +223,15 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
 
             if (robot.getMode() == ROBOT_AUTO_MODE && distance <= STOP_DISTANCE) {
                 robot.stop();
+                setTimeout(function() {
+                    robot.turnRightBy(90.0);
+                },5000);
             }
         });
     },100);
 });
 listener.gyro_angle.on('change',(path,event) => {
-    var distance;
+    var angle;
 
     logger("Change event on " + path);
 
@@ -235,6 +239,16 @@ listener.gyro_angle.on('change',(path,event) => {
         fs.readFile(paths[GYRO_ANGLE],'utf8', (err, data) => {
             if (err) throw err;
             logger("Gyro change  to : " + removeWhiteSigns(data));
+
+            angle = parseFloat(data);
+            if (robot.getMode() == ROBOT_AUTO_MODE
+             && robot.getState() == TURN_STATE) {
+                if (angle >= expected_gyro_angle - 1
+                 && angle <= expected_gyro_angle - 1) {
+                    robot.stop();
+                }
+            }
+
         });
     },100);
 });
@@ -283,6 +297,16 @@ Robot.prototype.turnRight = function () {
     move(true, false);
 }
 
+Robot.prototype.turnRightBy = function (angle) {
+    var current_gyro_angle;
+    current_gyro_angle = getGyroAngleSync();
+    current_gyro_angle = parseFloat(current_gyro_angle);
+    angle = parseFloat(angle);
+    expected_gyro_angle = current_gyro_angle + angle;
+    logger("New expected gyro angle: " + expected_gyro_angle);
+    this.setState(TURN_STATE);
+    move(true, false);
+}
 
 Robot.prototype.stop = function () {
     this.setState(STOP_STATE);
