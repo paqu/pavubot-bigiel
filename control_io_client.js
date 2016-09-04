@@ -301,6 +301,8 @@ Robot.prototype.turnRight = function () {
 
 Robot.prototype.turnRightBy = function (angle) {
     var current_gyro_angle;
+    setLeftMotorSpeed(75);
+    setLeftMotorSpeed(75);
     current_gyro_angle = getGyroAngleSync();
     current_gyro_angle = parseFloat(current_gyro_angle);
     angle = parseFloat(angle);
@@ -311,6 +313,20 @@ Robot.prototype.turnRightBy = function (angle) {
     logger("New expected gyro angle: " + expected_gyro_angle);
     this.setState(TURN_STATE);
     move(true, false);
+}
+
+Robot.prototype.turnLeftBy = function (angle) {
+    var current_gyro_angle;
+    current_gyro_angle = getGyroAngleSync();
+    current_gyro_angle = parseFloat(current_gyro_angle);
+    angle = parseFloat(angle);
+    expected_gyro_angle = current_gyro_angle - angle;
+    if (expected_gyro_angle < 0.0) {
+        expected_gyro_angle += 360.0;
+    }
+    logger("New expected gyro angle: " + expected_gyro_angle);
+    this.setState(TURN_STATE);
+    move(false, true);
 }
 
 Robot.prototype.stop = function () {
