@@ -9,12 +9,12 @@ var commandLineArgs = require('command-line-args');
 var options = commandLineArgs([
         { name : 'host',alias:'h', type: String },
         { name : 'port',alias:'p', type: Number },
-        { name : 'path',alias:'P', type: String },
+        { name : 'ddal_path',alias:'d', type: String },
 ]);
 
 var PORT = options.port;
 var HOST = options.host;
-var PATH = options.path
+var DDAL_PATH = options.ddal_path
 
 if (!PORT)
     PORT = 1234;
@@ -22,8 +22,8 @@ if (!PORT)
 if (!HOST)
     HOST = 'localhost';
 
-if (!PATH)
-    PATH = '';
+if (!DDAL_PATH)
+    DDAL_PATH = '';
 
 var url = 'http://'+ HOST + ':' + PORT+'/control';
 
@@ -74,22 +74,22 @@ const ROBOT_MODE               = "robot_mode";
 
 var paths = new Array();
 
-paths[CAMERA_ANGLE]             = PATH + "ddal/servo/camera_angle";
-paths[CAMERA_SUSPEND]           = PATH + "ddal/servo/camera_suspend";
-paths[GYRO_ANGLE]               = PATH + "ddal/gyro/angle";
-paths[VIDEO_SOCKET_ID]          = PATH + "ddal/socket/video_socketId";
-paths[LEFT_MOTOR_MODE]          = PATH + "ddal/motor/left_motor_mode";
-paths[RIGHT_MOTOR_MODE]         = PATH + "ddal/motor/right_motor_mode";
-paths[LEFT_MOTOR_SPEED]         = PATH + "ddal/motor/left_motor_speed";
-paths[RIGHT_MOTOR_SPEED]        = PATH + "ddal/motor/right_motor_speed";
-paths[MOTOR_SUSPEND]            = PATH + "ddal/motor/suspend";
-paths[DISTANCE_SENSOR_SONAR]    = PATH + "ddal/distance_sensor/sonar";
-paths[DISTANCE_SENSOR_INFRARED] = PATH + "ddal/distance_sensor/infrared";
-paths[LEFT_ENCODER_DISTANCE]    = PATH + "ddal/encoder/left_encoder_distance";
-paths[RIGHT_ENCODER_DISTANCE]   = PATH + "ddal/encoder/right_encoder_distance";
-paths[LEFT_ENCODER_RESET]       = PATH + "ddal/encoder/left_encoder_reset";
-paths[RIGHT_ENCODER_RESET]      = PATH + "ddal/encoder/right_encoder_reset";
-paths[ROBOT_NAME]               = PATH + "ddal/robot_info/robot_name";
+paths[CAMERA_ANGLE]             = DDAL_PATH + "ddal/servo/camera_angle";
+paths[CAMERA_SUSPEND]           = DDAL_PATH + "ddal/servo/camera_suspend";
+paths[GYRO_ANGLE]               = DDAL_PATH + "ddal/gyro/angle";
+paths[VIDEO_SOCKET_ID]          = DDAL_PATH + "ddal/socket/video_socketId";
+paths[LEFT_MOTOR_MODE]          = DDAL_PATH + "ddal/motor/left_motor_mode";
+paths[RIGHT_MOTOR_MODE]         = DDAL_PATH + "ddal/motor/right_motor_mode";
+paths[LEFT_MOTOR_SPEED]         = DDAL_PATH + "ddal/motor/left_motor_speed";
+paths[RIGHT_MOTOR_SPEED]        = DDAL_PATH + "ddal/motor/right_motor_speed";
+paths[MOTOR_SUSPEND]            = DDAL_PATH + "ddal/motor/suspend";
+paths[DISTANCE_SENSOR_SONAR]    = DDAL_PATH + "ddal/distance_sensor/sonar";
+paths[DISTANCE_SENSOR_INFRARED] = DDAL_PATH + "ddal/distance_sensor/infrared";
+paths[LEFT_ENCODER_DISTANCE]    = DDAL_PATH + "ddal/encoder/left_encoder_distance";
+paths[RIGHT_ENCODER_DISTANCE]   = DDAL_PATH + "ddal/encoder/right_encoder_distance";
+paths[LEFT_ENCODER_RESET]       = DDAL_PATH + "ddal/encoder/left_encoder_reset";
+paths[RIGHT_ENCODER_RESET]      = DDAL_PATH + "ddal/encoder/right_encoder_reset";
+paths[ROBOT_NAME]               = DDAL_PATH + "ddal/robot_info/robot_name";
 
 
 var expected_gyro_angle;

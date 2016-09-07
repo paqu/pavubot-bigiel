@@ -10,7 +10,7 @@ var commandLineArgs = require('command-line-args');
 var options = commandLineArgs([
         { name : 'host',alias:'h', type: String },
         { name : 'port',alias:'p', type: Number },
-        { name : 'path',alias:'P', type: String },
+        { name : 'ddal_path',alias:'d', type: String },
         { name : 'fps' ,alias:'f', type: Number },
         { name : 'modules_path' ,alias:'m', type: String },
 ]);
@@ -18,8 +18,8 @@ var options = commandLineArgs([
 var FPS  = options.fps;
 var PORT = options.port;
 var HOST = options.host;
-var PATH = options.path;
-var MODULES_PATH  = options.modules_path;
+var DDAL_PATH = options.ddal_path;
+var MODULES_DDAL_PATH  = options.modules_path;
 
 if (!FPS)
     FPS = 20;
@@ -30,11 +30,11 @@ if (!PORT)
 if (!HOST)
     HOST = 'localhost';
 
-if (!PATH)
-    PATH = '';
+if (!DDAL_PATH)
+    DDAL_PATH = '';
 
-if (!MODULES_PATH)
-   MODULES_PATH  = '.';
+if (!MODULES_DDAL_PATH)
+   MODULES_DDAL_PATH  = '.';
 
 var url = 'http://'+ HOST + ':' + PORT+'/video';
 
@@ -52,7 +52,7 @@ const VIDEO_SOCKET_ID = "video_socket_id";
 
 var paths = new Array();
 
-paths[VIDEO_SOCKET_ID] = PATH + "ddal/socket/video_socketId";
+paths[VIDEO_SOCKET_ID] = DDAL_PATH + "ddal/socket/video_socketId";
 
 camera = new cv.VideoCapture(0);
 camera.setWidth(camWidth);
