@@ -12,14 +12,12 @@ var options = commandLineArgs([
         { name : 'port',alias:'p', type: Number },
         { name : 'ddal_path',alias:'d', type: String },
         { name : 'fps' ,alias:'f', type: Number },
-        { name : 'modules_path' ,alias:'m', type: String },
 ]);
 
 var FPS  = options.fps;
 var PORT = options.port;
 var HOST = options.host;
 var DDAL_PATH = options.ddal_path;
-var MODULES_DDAL_PATH  = options.modules_path;
 
 if (!FPS)
     FPS = 20;
@@ -33,8 +31,6 @@ if (!HOST)
 if (!DDAL_PATH)
     DDAL_PATH = '';
 
-if (!MODULES_DDAL_PATH)
-   MODULES_DDAL_PATH  = '.';
 
 var url = 'http://'+ HOST + ':' + PORT+'/video';
 
