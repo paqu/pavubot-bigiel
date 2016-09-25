@@ -4,6 +4,7 @@ var io = require('socket.io-client');
 var fs = require('fs')
 var chokidar = require('chokidar');
 var logger   = require('simple-logger');
+var spawn    = require('child_process').spawn;
 var commandLineArgs = require('command-line-args');
 
 var options = commandLineArgs([
@@ -26,6 +27,8 @@ if (!DDAL_PATH)
     DDAL_PATH = '';
 
 var url = 'http://'+ HOST + ':' + PORT+'/control';
+
+const AUTO_DRIVE_PATH = '/home/root/auto_drive'
 
 const ROBOT_AUTO_MODE   = 0;
 const ROBOT_MANUAL_MODE = 1;
@@ -92,6 +95,7 @@ paths[RIGHT_ENCODER_RESET]      = DDAL_PATH + "ddal/encoder/right_encoder_reset"
 paths[ROBOT_NAME]               = DDAL_PATH + "ddal/robot_info/robot_name";
 
 
+var auto_drive;
 var expected_gyro_angle;
 var init_data = {} 
 var init_data_to_send = [LEFT_MOTOR_SPEED, RIGHT_MOTOR_SPEED, LEFT_ENCODER_DISTANCE,
@@ -122,6 +126,40 @@ function removeWhiteSigns(data) {
     return data.replace(/^\s+|\s+$/g, "");
 }
 
+function startListener() {
+    listener.video_socketId = chokidar.watch(paths[VIDEO_SOCKET_ID], {
+        persistent: true
+    });
+
+    listener.right_encoder_distance = chokidar.watch(paths[RIGHT_ENCODER_DISTANCE], {
+        persistent: true
+    });
+
+    listener.left_encoder_distance = chokidar.watch(paths[LEFT_ENCODER_DISTANCE], {
+        persistent: true
+    });
+
+    listener.distance_sensor_sonar = chokidar.watch(paths[DISTANCE_SENSOR_SONAR], {
+        persistent: true
+    });
+
+    listener.distance_sensor_infrared = chokidar.watch(paths[DISTANCE_SENSOR_INFRARED], {
+        persistent: true
+    });
+
+    listener.gyro_angle = chokidar.watch(paths[GYRO_ANGLE], {
+        persistent: true
+    });
+}
+
+function stopListener() {
+    listener.right_encoder_distance.close();
+    listener.left_encoder_distance.close();
+    listener.distance_sensor_sonar.close();
+    listener.distance_sensor_infrared.close();
+    listener.gyro_angle.close();
+}
+
 var listener = {
     video_socketId:{},
     right_encoder_distance:{},
@@ -131,29 +169,7 @@ var listener = {
     gyro_angle:{}
 };
 
-listener.video_socketId = chokidar.watch(paths[VIDEO_SOCKET_ID], {
-    persistent: true
-});
-
-listener.right_encoder_distance = chokidar.watch(paths[RIGHT_ENCODER_DISTANCE], {
-    persistent: true
-});
-
-listener.left_encoder_distance = chokidar.watch(paths[LEFT_ENCODER_DISTANCE], {
-    persistent: true
-});
-
-listener.distance_sensor_sonar = chokidar.watch(paths[DISTANCE_SENSOR_SONAR], {
-    persistent: true
-});
-
-listener.distance_sensor_infrared = chokidar.watch(paths[DISTANCE_SENSOR_INFRARED], {
-    persistent: true
-});
-
-listener.gyro_angle = chokidar.watch(paths[GYRO_ANGLE], {
-    persistent: true
-});
+startListener();
 
 listener.video_socketId.on("change",(path,event) => {
     logger("Change event on " + path);
@@ -218,7 +234,7 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
 
             //logger("[emit] server:control:update_distance_sensor_infrared:" + data);
             conn.emit("server:control:update_distance_sensor_infrared",{distance_sensor_infrared:removeWhiteSigns(data)});
-
+/*
             distance = parseFloat(data);
 
             if (robot.getMode() == ROBOT_AUTO_MODE
@@ -230,6 +246,7 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
                 },5000);
             }
         });
+        */
     },100);
 });
 listener.gyro_angle.on('change',(path,event) => {
@@ -241,7 +258,7 @@ listener.gyro_angle.on('change',(path,event) => {
         fs.readFile(paths[GYRO_ANGLE],'utf8', (err, data) => {
             if (err) throw err;
             logger("Gyro change  to : " + removeWhiteSigns(data));
-
+/*
             angle = parseFloat(data);
             if (robot.getMode() == ROBOT_AUTO_MODE
              && robot.getState() == TURN_STATE) {
@@ -250,6 +267,7 @@ listener.gyro_angle.on('change',(path,event) => {
                     robot.stop();
                 }
             }
+            */
 
         });
     },100);
@@ -299,6 +317,7 @@ Robot.prototype.turnRight = function () {
     move(true, false);
 }
 
+/*
 Robot.prototype.turnRightBy = function (angle) {
     var current_gyro_angle;
     setLeftMotorSpeed(75);
@@ -328,6 +347,7 @@ Robot.prototype.turnLeftBy = function (angle) {
     this.setState(TURN_STATE);
     move(false, true);
 }
+*/
 
 Robot.prototype.stop = function () {
     this.setState(STOP_STATE);
@@ -511,14 +531,20 @@ conn.on("robot::update_speed_both", function(data) {
 
 conn.on("robot::automode", function() {
     logger("[on] robot::automode");
-    robot.setMode(ROBOT_AUTO_MODE);
-    robot.goStraight();
+    stopListener();
+    robot.turnOff();
+    auto_drive = spawn(AUTO_DRIVE_PATH);
 });
+
+auto_drive.on('close', function(code) {
+    robot.setMode(ROBOT_MANUAL_MODE);
+    robot.turnOn();
+    robot.stop();
+}
 
 conn.on("robot::manualmode", function() {
     logger("[on] robot::manualmode");
-    robot.setMode(ROBOT_MANUAL_MODE);
-    robot.stop();
+    auto_drive.kill();
 });
 
 /* Error handling */
