@@ -121,7 +121,7 @@ conn.on("video::start_video",function () {
             //conn.emit("server_video_nsp:frame",{ frame: im.toBuffer() });
 
             chunk = im.toBuffer();
-            client_socket.send(chunk,0,chunk.length,UDP_PORT,'localhost');
+            client_socket.send(chunk,0,chunk.length,UDP_PORT,HOST);
         });
     },camInterval);
 });
