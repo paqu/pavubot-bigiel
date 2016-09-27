@@ -13,12 +13,14 @@ var options = commandLineArgs([
         { name : 'port',alias:'p', type: Number },
         { name : 'ddal_path',alias:'d', type: String },
         { name : 'fps' ,alias:'f', type: Number },
+        { name : 'udp' ,alias:'u', type: String },
 ]);
 
 var FPS  = options.fps;
 var PORT = options.port;
 var HOST = options.host;
 var DDAL_PATH = options.ddal_path;
+var UDP_PORT  = options.udp;
 
 if (!FPS)
     FPS = 20;
@@ -31,6 +33,9 @@ if (!HOST)
 
 if (!DDAL_PATH)
     DDAL_PATH = '';
+
+if (!UDP_PORT)
+    UDP_PORT = 8888;
 
 
 var url = 'http://'+ HOST + ':' + PORT+'/video';
@@ -116,7 +121,7 @@ conn.on("video::start_video",function () {
             //conn.emit("server_video_nsp:frame",{ frame: im.toBuffer() });
 
             chunk = im.toBuffer();
-            client_socket.send(chunk,0,chunk.length,8888,'localhost');
+            client_socket.send(chunk,0,chunk.length,UDP_PORT,'localhost');
         });
     },camInterval);
 });
