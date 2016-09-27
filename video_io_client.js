@@ -4,9 +4,10 @@ var io = require('socket.io-client');
 var fs = require('fs')
 var cv = require('opencv');
 var logger   = require('simple-logger');
+var dgram    = require('dgram');
 var chokidar = require('chokidar');
 var commandLineArgs = require('command-line-args');
-
+var client_socket   = dgram.createSocket('udp4');
 var options = commandLineArgs([
         { name : 'host',alias:'h', type: String },
         { name : 'port',alias:'p', type: Number },
@@ -110,9 +111,12 @@ conn.on("video::start_video",function () {
     interval = setInterval(function () {
         camera.read(function(err, im) {
             if (err) throw err;
+            logger("[emit]:server_video_nsp:frame");
 
-            logger("[emit]:server:video:frame");
-            conn.emit("server:video:frame",{ frame: im.toBuffer() });
+            //conn.emit("server_video_nsp:frame",{ frame: im.toBuffer() });
+
+            chunk = im.toBuffer();
+            client_socket.send(chunk,0,chunk.length,8888,'localhost');
         });
     },camInterval);
 });
