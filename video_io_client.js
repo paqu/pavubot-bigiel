@@ -22,6 +22,8 @@ var HOST = options.host;
 var DDAL_PATH = options.ddal_path;
 var UDP_PORT  = options.udp;
 
+var video_socket_id;
+
 if (!FPS)
     FPS = 20;
 
@@ -102,14 +104,20 @@ conn.on('error', function (err) {
 
 conn.on('video::video_socket_id', function (data) {
     logger('get socket id:'+ data.socket_id + ' from server.');
+    video_socket_id = data.socket_id;
     writeToFile(paths[VIDEO_SOCKET_ID], data.socket_id);
 });
 
+setInterval(function() {
+    console.log("yy " + video_socket_id);
+},5000);
 
 conn.on("video::stop_video", function () {
     logger("[on] video:stop_video");
     clearInterval(interval);
 });
+
+
 
 conn.on("video::start_video",function () {
     logger("[on] video::start_video");
@@ -119,9 +127,16 @@ conn.on("video::start_video",function () {
             logger("[emit]:server_video_nsp:frame");
 
             //conn.emit("server_video_nsp:frame",{ frame: im.toBuffer() });
-
-            chunk = im.toBuffer();
-            client_socket.send(chunk,0,chunk.length,UDP_PORT,HOST);
+            var id = new Buffer(27);
+            id.fill(-1);
+            console.log(video_socket_id);
+            id.write(video_socket_id);
+            frame = im.toBuffer();
+            msg  = Buffer.concat([id,frame]);
+            console.log(id.toString());
+            console.log(frame.toString());
+            size = id.length + frame.length;
+            client_socket.send(msg,0,size,UDP_PORT,HOST);
         });
     },camInterval);
 });
