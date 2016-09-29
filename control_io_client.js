@@ -28,7 +28,7 @@ if (!DDAL_PATH)
 
 var url = 'http://'+ HOST + ':' + PORT+'/control';
 
-const AUTORIDE_PATH = '/home/root/autoride"
+const AUTORIDE_PATH = '/home/root/autoride'
 
 const ROBOT_AUTO_MODE   = 0;
 const ROBOT_MANUAL_MODE = 1;
