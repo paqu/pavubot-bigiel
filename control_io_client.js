@@ -4,6 +4,7 @@ var io = require('socket.io-client');
 var fs = require('fs')
 var chokidar = require('chokidar');
 var logger   = require('simple-logger');
+var spawn    = require('child_process').spawn;
 var commandLineArgs = require('command-line-args');
 
 var options = commandLineArgs([
@@ -27,14 +28,12 @@ if (!DDAL_PATH)
 
 var url = 'http://'+ HOST + ':' + PORT+'/control';
 
+const AUTORIDE_PATH = '/home/root/autoride'
+
 const ROBOT_AUTO_MODE   = 0;
 const ROBOT_MANUAL_MODE = 1;
 
-const GO_STRAIGHT_STATE = 0;
-const STOP_STATE        = 1;
-const TURN_STATE        = 2;
 
-const STOP_DISTANCE = 30.0
 
 const DEFAULT_SPEED = 75
 
@@ -92,6 +91,7 @@ paths[RIGHT_ENCODER_RESET]      = DDAL_PATH + "ddal/encoder/right_encoder_reset"
 paths[ROBOT_NAME]               = DDAL_PATH + "ddal/robot_info/robot_name";
 
 
+var autoride;
 var expected_gyro_angle;
 var init_data = {} 
 var init_data_to_send = [LEFT_MOTOR_SPEED, RIGHT_MOTOR_SPEED, LEFT_ENCODER_DISTANCE,
@@ -122,38 +122,45 @@ function removeWhiteSigns(data) {
     return data.replace(/^\s+|\s+$/g, "");
 }
 
+function startListener() {
+    listener.video_socketId = chokidar.watch(paths[VIDEO_SOCKET_ID], {
+        persistent: true
+    });
+
+    listener.right_encoder_distance = chokidar.watch(paths[RIGHT_ENCODER_DISTANCE], {
+        persistent: true
+    });
+
+    listener.left_encoder_distance = chokidar.watch(paths[LEFT_ENCODER_DISTANCE], {
+        persistent: true
+    });
+
+    listener.distance_sensor_sonar = chokidar.watch(paths[DISTANCE_SENSOR_SONAR], {
+        persistent: true
+    });
+
+    listener.distance_sensor_infrared = chokidar.watch(paths[DISTANCE_SENSOR_INFRARED], {
+        persistent: true
+    });
+
+}
+
+function stopListener() {
+    listener.right_encoder_distance.close();
+    listener.left_encoder_distance.close();
+    listener.distance_sensor_sonar.close();
+    listener.distance_sensor_infrared.close();
+}
+
 var listener = {
     video_socketId:{},
     right_encoder_distance:{},
     left_encoder_distance:{},
     distance_sensor_sonar:{},
     distance_sensor_infrared:{},
-    gyro_angle:{}
 };
 
-listener.video_socketId = chokidar.watch(paths[VIDEO_SOCKET_ID], {
-    persistent: true
-});
-
-listener.right_encoder_distance = chokidar.watch(paths[RIGHT_ENCODER_DISTANCE], {
-    persistent: true
-});
-
-listener.left_encoder_distance = chokidar.watch(paths[LEFT_ENCODER_DISTANCE], {
-    persistent: true
-});
-
-listener.distance_sensor_sonar = chokidar.watch(paths[DISTANCE_SENSOR_SONAR], {
-    persistent: true
-});
-
-listener.distance_sensor_infrared = chokidar.watch(paths[DISTANCE_SENSOR_INFRARED], {
-    persistent: true
-});
-
-listener.gyro_angle = chokidar.watch(paths[GYRO_ANGLE], {
-    persistent: true
-});
+startListener();
 
 listener.video_socketId.on("change",(path,event) => {
     logger("Change event on " + path);
@@ -218,51 +225,15 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
 
             //logger("[emit] server:control:update_distance_sensor_infrared:" + data);
             conn.emit("server:control:update_distance_sensor_infrared",{distance_sensor_infrared:removeWhiteSigns(data)});
-
-            distance = parseFloat(data);
-
-            if (robot.getMode() == ROBOT_AUTO_MODE
-             && robot.getState() == GO_STRAIGHT_STATE
-             && distance <= STOP_DISTANCE) {
-                robot.stop();
-                setTimeout(function() {
-                    robot.turnRightBy(90.0);
-                },5000);
-            }
         });
     },100);
 });
-listener.gyro_angle.on('change',(path,event) => {
-    var angle;
 
-    logger("Change event on " + path);
-
-    setTimeout(function (path) {
-        fs.readFile(paths[GYRO_ANGLE],'utf8', (err, data) => {
-            if (err) throw err;
-            logger("Gyro change  to : " + removeWhiteSigns(data));
-
-            angle = parseFloat(data);
-            if (robot.getMode() == ROBOT_AUTO_MODE
-             && robot.getState() == TURN_STATE) {
-                if (angle >= expected_gyro_angle - 1
-                 && angle <= expected_gyro_angle - 1) {
-                    robot.stop();
-                }
-            }
-
-        });
-    },100);
-});
 
 var Robot = function (mode) {
     this.mode = mode;
     this.state = -1;
 
-    function setState(val) {
-        logger("Robot set state to: " + translateStateCode(val));
-        this.state = val;
-    }
 };
 
 
@@ -274,16 +245,8 @@ Robot.prototype.setMode = function (val) {
     this.mode = val;
 }
 
-Robot.prototype.getState = function () {
-    return this.state;
-}
-Robot.prototype.setState = function (val) {
-    logger("Robot set state to: " + translateStateCode(val));
-    this.state = val;
-}
 
 Robot.prototype.goStraight = function () {
-    this.setState(GO_STRAIGHT_STATE);
     move(true, true);
 }
 
@@ -299,38 +262,8 @@ Robot.prototype.turnRight = function () {
     move(true, false);
 }
 
-Robot.prototype.turnRightBy = function (angle) {
-    var current_gyro_angle;
-    setLeftMotorSpeed(75);
-    setLeftMotorSpeed(75);
-    current_gyro_angle = getGyroAngleSync();
-    current_gyro_angle = parseFloat(current_gyro_angle);
-    angle = parseFloat(angle);
-    expected_gyro_angle = current_gyro_angle + angle;
-    if (expected_gyro_angle > 360.0) {
-        expected_gyro_angle %= 360.0;
-    }
-    logger("New expected gyro angle: " + expected_gyro_angle);
-    this.setState(TURN_STATE);
-    move(true, false);
-}
-
-Robot.prototype.turnLeftBy = function (angle) {
-    var current_gyro_angle;
-    current_gyro_angle = getGyroAngleSync();
-    current_gyro_angle = parseFloat(current_gyro_angle);
-    angle = parseFloat(angle);
-    expected_gyro_angle = current_gyro_angle - angle;
-    if (expected_gyro_angle < 0.0) {
-        expected_gyro_angle += 360.0;
-    }
-    logger("New expected gyro angle: " + expected_gyro_angle);
-    this.setState(TURN_STATE);
-    move(false, true);
-}
 
 Robot.prototype.stop = function () {
-    this.setState(STOP_STATE);
     setRightMotorMode(STOP);
     setLeftMotorMode(STOP);
 }
@@ -511,14 +444,29 @@ conn.on("robot::update_speed_both", function(data) {
 
 conn.on("robot::automode", function() {
     logger("[on] robot::automode");
+    stopListener();
+    robot.turnOff();
+    autoride = spawn(AUTORIDE_PATH);
     robot.setMode(ROBOT_AUTO_MODE);
-    robot.goStraight();
 });
+
+if (robot.getMode() == ROBOT_AUTO_MODE) {
+    autoride.on('close', function(code) {
+        robot.setMode(ROBOT_MANUAL_MODE);
+        robot.turnOn();
+        startListener();
+        robot.stop();
+    });
+}
 
 conn.on("robot::manualmode", function() {
     logger("[on] robot::manualmode");
-    robot.setMode(ROBOT_MANUAL_MODE);
-    robot.stop();
+    autoride.kill();
+});
+
+conn.on("robot::recognized_all_wanted", function() {
+    logger("[on] robot::recognized_all_wanted");
+    autoride.kill();
 });
 
 /* Error handling */
@@ -569,20 +517,3 @@ function translateModeCode(code) {
     }
 }
 
-function translateStateCode(code) {
-    switch (code) {
-        case GO_STRAIGHT_STATE:
-            return "go straight";
-        case STOP_STATE:
-            return "stop";
-        case TURN_STATE:
-            return "turn state";
-        default:
-            return "undefined state";
-    }
-}
-
-function getGyroAngleSync() {
-    var data = fs.readFileSync(paths[GYRO_ANGLE],'utf8');
-    return removeWhiteSigns(data);
-}
