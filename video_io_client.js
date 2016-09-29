@@ -60,6 +60,7 @@ conn.on('connect', function (data) {
 });
 
 conn.on('disconnect', function () {
+    clearInterval(interval);
 });
 
 conn.on('connect_error', function (err) {
