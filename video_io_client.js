@@ -109,9 +109,6 @@ conn.on('video::video_socket_id', function (data) {
     writeToFile(paths[VIDEO_SOCKET_ID], data.socket_id);
 });
 
-setInterval(function() {
-    console.log("yy " + video_socket_id);
-},5000);
 
 conn.on("video::stop_video", function () {
     logger("[on] video:stop_video");
@@ -130,12 +127,9 @@ conn.on("video::start_video",function () {
             //conn.emit("server_video_nsp:frame",{ frame: im.toBuffer() });
             var id = new Buffer(27);
             id.fill(-1);
-            console.log(video_socket_id);
             id.write(video_socket_id);
             frame = im.toBuffer();
             msg  = Buffer.concat([id,frame]);
-            console.log(id.toString());
-            console.log(frame.toString());
             size = id.length + frame.length;
             client_socket.send(msg,0,size,UDP_PORT,HOST);
         });
