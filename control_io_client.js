@@ -447,13 +447,17 @@ conn.on("robot::automode", function() {
     stopListener();
     robot.turnOff();
     autoride = spawn(AUTORIDE_PATH);
+    robot.setMode(ROBOT_AUTO_MODE);
 });
-auto_drive.on('close', function(code) {
-    robot.setMode(ROBOT_MANUAL_MODE);
-    robot.turnOn();
-    startListener();
-    robot.stop();
-});
+
+if (robot.getMode() == ROBOT_AUTO_MODE) {
+    autoride.on('close', function(code) {
+        robot.setMode(ROBOT_MANUAL_MODE);
+        robot.turnOn();
+        startListener();
+        robot.stop();
+    });
+}
 
 conn.on("robot::manualmode", function() {
     logger("[on] robot::manualmode");
