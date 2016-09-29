@@ -28,7 +28,7 @@ if (!DDAL_PATH)
 
 var url = 'http://'+ HOST + ':' + PORT+'/control';
 
-const AUTO_DRIVE_PATH = '/home/root/auto_drive'
+const AUTORIDE_PATH = '/home/root/autoride"
 
 const ROBOT_AUTO_MODE   = 0;
 const ROBOT_MANUAL_MODE = 1;
@@ -95,7 +95,7 @@ paths[RIGHT_ENCODER_RESET]      = DDAL_PATH + "ddal/encoder/right_encoder_reset"
 paths[ROBOT_NAME]               = DDAL_PATH + "ddal/robot_info/robot_name";
 
 
-var auto_drive;
+var autoride;
 var expected_gyro_angle;
 var init_data = {} 
 var init_data_to_send = [LEFT_MOTOR_SPEED, RIGHT_MOTOR_SPEED, LEFT_ENCODER_DISTANCE,
@@ -234,7 +234,6 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
 
             //logger("[emit] server:control:update_distance_sensor_infrared:" + data);
             conn.emit("server:control:update_distance_sensor_infrared",{distance_sensor_infrared:removeWhiteSigns(data)});
-/*
             distance = parseFloat(data);
 
             if (robot.getMode() == ROBOT_AUTO_MODE
@@ -246,9 +245,9 @@ listener.distance_sensor_infrared.on('change',(path,event) => {
                 },5000);
             }
         });
-        */
     },100);
 });
+
 listener.gyro_angle.on('change',(path,event) => {
     var angle;
 
@@ -258,7 +257,7 @@ listener.gyro_angle.on('change',(path,event) => {
         fs.readFile(paths[GYRO_ANGLE],'utf8', (err, data) => {
             if (err) throw err;
             logger("Gyro change  to : " + removeWhiteSigns(data));
-/*
+
             angle = parseFloat(data);
             if (robot.getMode() == ROBOT_AUTO_MODE
              && robot.getState() == TURN_STATE) {
@@ -267,8 +266,6 @@ listener.gyro_angle.on('change',(path,event) => {
                     robot.stop();
                 }
             }
-            */
-
         });
     },100);
 });
@@ -533,18 +530,23 @@ conn.on("robot::automode", function() {
     logger("[on] robot::automode");
     stopListener();
     robot.turnOff();
-    auto_drive = spawn(AUTO_DRIVE_PATH);
+    autoride = spawn(AUTORIDE_PATH);
 });
-
 auto_drive.on('close', function(code) {
     robot.setMode(ROBOT_MANUAL_MODE);
     robot.turnOn();
+    startListener();
     robot.stop();
-}
+});
 
 conn.on("robot::manualmode", function() {
     logger("[on] robot::manualmode");
-    auto_drive.kill();
+    autoride.kill();
+});
+
+conn.on("robot::recognized_all_wanted", function() {
+    logger("[on] robot::recognized_all_wanted");
+    autoride.kill();
 });
 
 /* Error handling */
