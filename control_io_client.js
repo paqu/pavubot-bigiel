@@ -28,7 +28,7 @@ if (!DDAL_PATH)
 
 var url = 'http://'+ HOST + ':' + PORT+'/control';
 
-const AUTORIDE_PATH = '/home/root/autoride'
+const AUTORIDE_PATH = './autoride'
 
 const ROBOT_AUTO_MODE   = 0;
 const ROBOT_MANUAL_MODE = 1;
@@ -462,11 +462,19 @@ if (robot.getMode() == ROBOT_AUTO_MODE) {
 conn.on("robot::manualmode", function() {
     logger("[on] robot::manualmode");
     autoride.kill();
+    robot.setMode(ROBOT_MANUAL_MODE);
+    robot.turnOn();
+    startListener();
+    robot.stop();
 });
 
 conn.on("robot::recognized_all_wanted", function() {
     logger("[on] robot::recognized_all_wanted");
     autoride.kill();
+    robot.setMode(ROBOT_MANUAL_MODE);
+    robot.turnOn();
+    startListener();
+    robot.stop();
 });
 
 /* Error handling */
